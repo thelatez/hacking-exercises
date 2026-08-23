@@ -2,8 +2,11 @@
 
 ### Tehtäväkuvaus
 a1) Mitä kuuluu ISMS laajuuteen (kodin verkkoinfrastruktuuri, laitteet, data)
+
 a2) Mitä ei sisällytetä ISMS laajuuteen
+
 a3) Avainliitännät ja rajat (esim. pilvipalvelut, etäyhteydet, rajat kotiverkon ja internetin välillä, palveluntarjoajat)
+
 b) Tunnista vähintään kaksi (2) kodin verkosta kiinnostunutta osapuolta.
 
 ## Vastaus
