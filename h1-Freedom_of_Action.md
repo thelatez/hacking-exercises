@@ -29,8 +29,11 @@ a2) ISMS laajuuteen ei sisällytetä:
 * Muut puhelimet (7 kpl)
 * Älytelevisiot (1 kpl)
 * Pelikonsolit (2 kpl)
+  
 Yllä olevat eivät kuulu laajuuteen, sillä ne eivät ole relevantteja kurssin osalta, eikä minulla ole omistajuutta. Lisäksi:
-* Internetin tarjoaja 
+
+* Internetin tarjoaja
+  
 Telia vastaa internetin tarjoajana ulkoisesta verkon turvallisuudesta ja toimivuudesta.
 
 a3)
