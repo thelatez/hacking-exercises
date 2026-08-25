@@ -13,7 +13,7 @@ b) Tunnista vähintään kaksi (2) kodin verkosta kiinnostunutta osapuolta.
 
 ### ISMS laajuus
 
-Sovellusten hakkerointi ja haavoittuvuudet - ICI012AS3A-3004, Lauri Rantala, 24.8.2026.
+Sovellusten hakkerointi ja haavoittuvuudet - ICI012AS3A-3004, Lauri Rantala, 25.8.2026.
 
 a1) ISMS laajuuteen kuuluu kotiympäristössäni: 
 * Kodin verkkoinfrastruktuuri:
@@ -42,6 +42,13 @@ a2) ISMS laajuuteen ei sisällytetä:
     * Syy: hallinta kuuluu palveluntarjoajalle (Telia)
   
 a3)
+
+### Mitä todisteita voisi olla?
+* Verkkoinfrastruktuurista voisi ottaa kuvaa esimerkiksi reitittimen kotisivusta, jossa näkyy liikenteen kulkua ja yleiskatsaus esimerkiksi laitemäärästä. Tällä voisi myös todistaa, että laitteita on myös scopen ulkopuolelta.
+* Kurssilaitteista voisi ottaa esimerkiksi yksilölliset laitetunnukset ja MAC-osoitteet. MAC-osoitteet pystyy yhdistämään reitittimen laitesivulla myös yhdistettyihin laitteisiin. Linux virtuaalikoneesta pystyisi ottamaan kuvaan esimerkiksi VirtualBoxin käyttöliittymästä, missä näkyy kaikki laitteen virtuaalikoneet.
+* Informaatiosta ja datasta pystyisi ottamaan esimerkiksi tämän GitHub repositorion linkin, käyttäjänimiä tileistä tai jonkinlaista käyttöliittymäkuvaa, missä näkyy useampi käytetty sähköpostiosoite.
+
+
 
 b)
 
