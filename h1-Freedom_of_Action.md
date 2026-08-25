@@ -16,32 +16,32 @@ b) Tunnista vähintään kaksi (2) kodin verkosta kiinnostunutta osapuolta.
 Sovellusten hakkerointi ja haavoittuvuudet - ICI012AS3A-3004, Lauri Rantala, 24.8.2026.
 
 a1) ISMS laajuuteen kuuluu kotiympäristössäni: 
-* Reititin
-* Wi-Fi-yhteys, jotta saan kannettavaan tietokoneeseen internet-yhteyden
-* Henkilökohtainen pöytätietokone
-* Kannettava tietokone, jossa Windows 11-käyttöjärjestelmä ja virtualisoitu Debian-käyttöjärjestelmä VirtualBoxin avulla.
-* Henkilökohtainen puhelin, jossa on käytössä MFA, salasanapankki
-* GitHub repositorio, jonne palautetaan tehtävät
-* Käyttäjätunnukset (koulun sähköpostitili, henkilökohtainen sähköpostitili, github-tili)
-* Oma huone, jossa laitteet sijaitsevat ja tehtävät tehdään
-* Oma data (tallennettu paikalliselle kovalevylle tai OneDriveen tai GitHubiin)
+* Kodin verkkoinfrastruktuuri:
+    * Wi-Fi reititin, jotta opiskeluun voidaan käyttää verkkoyhteyttä
+* Kurssilaitteet:
+    * Kannettava tietokone, jolla pyöritetään Linux virtuaalikonetta
+    * Linux virtuaalikone, jolla tehdään tehtävät
+    * henkilökohtainen älypuhelin, jolla hoidetaan MFA ja autentikaatio
+* Informaatio ja data:
+    * Kurssimateriaalit
+    * Repositoriot, jotka sisältävät esimerkiksi kurssin tehtäviä ja vastauksia
+    * Käyttäjätiedot, joita käytetään kurssin tehtävien suorittamiseen
 
 a2) ISMS laajuuteen ei sisällytetä:
-* Muut pöytäkoneet (1 kpl)
-* Muut kannettavat tietokoneet (4 kpl)
-* Muut puhelimet (3 kpl)
-* Älytelevisio (1 kpl)
-* Pelikonsolit (2 kpl)
-* Kaikki data liittyen edellä oleviin laitteisiin
-* Muu jaettu kotiympäristö, kuten keittiö
-* Internetin tarjoaja (Telia vastaa internetin tarjoajana verkon turvallisuudesta ja toimivuudesta)
-
-Laajuuteen ei sisällytetä edellämainittuja asioita, sillä minulla ei ole niihin omistajuutta ja/tai ne eivät ole relevantteja kurssin kannalta. 
+* Perheenjäsenten henkilökohtaiset laitteet:
+    * Puhelimet, tabletit tai tietokoneet, jotka jokin toinen perheenjäsen omistaa
+    * Syy: ei hallittavissa, ei merkityksellinen kurssille
+* Pääasiassa viihdettä suorittavat laitteet:
+    * Älytelevisiot, pelikonsolit
+    * Syy: ei hyödynnetä kurssin työskentelyssä, ylläpidetään erikseen opiskeluun liittyvistä turvallisuusasioista
+* Töihin liittyvät laitteet:
+    * Työpaikalta saatu tietokone ja puhelin
+    * Syy: hallinta ja vastuu kuuluu työpaikan omalle turvallisuuspolitiikalle
+* Internet-palveluntarjoajan verkkoinfrastruktuuri:
+    * Julkinen verkko kodin verkon ulkopuolella
+    * Syy: hallinta kuuluu palveluntarjoajalle (Telia)
   
-
 a3)
-
-Todisteet:
 
 b)
 
