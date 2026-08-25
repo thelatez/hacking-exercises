@@ -48,10 +48,16 @@ a3)
 * Kurssilaitteista voisi ottaa esimerkiksi yksilölliset laitetunnukset ja MAC-osoitteet. MAC-osoitteet pystyy yhdistämään reitittimen laitesivulla myös yhdistettyihin laitteisiin. Linux virtuaalikoneesta pystyisi ottamaan kuvaan esimerkiksi VirtualBoxin käyttöliittymästä, missä näkyy kaikki laitteen virtuaalikoneet.
 * Informaatiosta ja datasta pystyisi ottamaan esimerkiksi tämän GitHub repositorion linkin, käyttäjänimiä tileistä tai jonkinlaista käyttöliittymäkuvaa, missä näkyy useampi käytetty sähköpostiosoite.
 
-
-
 b)
+| Sidosryhmä                     | Tarve/Vaatimus                                                                                                                   | ISO 27001 vaatimusalue            | Todisteet |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | --------- |
+| Minä                           | Saatavuus & Datan pysyvyys: Kurssin suorittaminen ympäristössä on mahdollista, tiedostot pysyvät kunnossa ja saatavilla          | Suunnittelu, Toiminta             | Pilvitallennusten logit, commit-historia |
+| Perheenjäsenet                 | Yksityisyys & Saatavuus: Perheenjäsenten data ei vaaraannu työskentelyssä, kurssin suorittaminen ei häiritse normaalia toimintaa | Toiminta, Suorituskyvyn arviointi | Tiedonsiirtorajojen asetukset |
+| Haaga-Helia ammattikorkeakoulu | Vaatimustenmukaisuus & Turvallisuus: Koulun ja kurssin sääntöjen mukainen työskentely                                            | Konteksti, Johtajuus              | Palautetut tehtävät, hyväksytty sopimus kurssin alussa, hyväksytty sopimus säännöistä koulun kanssa |
+| Yleinen virkavalta             | Lainmukaisuus: Työskentely noudattaa lakia, esim. hakkeroinnin yhteydessä                                                        | Konteksti, Edistys                | Linux-ympäristön komentorivilogit |
 
 ### Lähteet
 * https://www.digiturvamalli.fi/blogi/mika-on-isms (mikä on isms)
 * https://terokarvinen.com/application-hacking/#homework (tehtävänanto, esimerkit)
+* https://hightable.io/iso-27001-clause-4-2-understanding-the-needs-and-expectations-of-interested-parties/ (b-osioon apua)
+* 25.8.2026 käytetty Googlen Gemini -laajaa kielimallia. Syötteenä: "I need help with an ISO 27001 compliant 'interested parties' table, explain 'ISO 27001 reference (requirement area)' and how I could prove them for 'you', 'family members', 'school', and 'general authorities' in the scope of a home network". 
