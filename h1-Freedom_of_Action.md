@@ -43,6 +43,8 @@ a2) ISMS laajuuteen ei sisällytetä:
   
 a3)
 
+![Verkkodiagrammi](kaavio.drawio.png)
+
 ### Mitä todisteita voisi olla?
 * Verkkoinfrastruktuurista voisi ottaa kuvaa esimerkiksi reitittimen kotisivusta, jossa näkyy liikenteen kulkua ja yleiskatsaus esimerkiksi laitemäärästä. Tällä voisi myös todistaa, että laitteita on myös scopen ulkopuolelta.
 * Kurssilaitteista voisi ottaa esimerkiksi yksilölliset laitetunnukset ja MAC-osoitteet. MAC-osoitteet pystyy yhdistämään reitittimen laitesivulla myös yhdistettyihin laitteisiin. Linux virtuaalikoneesta pystyisi ottamaan kuvaan esimerkiksi VirtualBoxin käyttöliittymästä, missä näkyy kaikki laitteen virtuaalikoneet.
