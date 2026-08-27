@@ -9,4 +9,6 @@
 
 ## Vastaus
 
-Lab0: 
+Lab0:
+
+<img width="915" height="515" alt="image" src="https://github.com/user-attachments/assets/4e6270c4-7d0d-442c-a2a3-8ebfa3c7c5c7" />
