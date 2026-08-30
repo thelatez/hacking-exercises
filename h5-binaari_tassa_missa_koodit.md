@@ -29,4 +29,22 @@ Ohjelma toimii nyt halutulla tavalla.
 
 ## Lab1:
 
+<img width="502" height="535" alt="image" src="https://github.com/user-attachments/assets/a6fb6766-1723-400c-b8fc-cbc565f6092a" />
 
+Alkuun katsoin ohjelman lähdekoodia komennolla: "more gdb_example1.c". Sieltä koodin toiminallisuus ja virhe eivät tulleet heti selviksi, joten suoritin myös ohjelman komennolla "./gdb.example1", jonka tuloksena oli: 
+    
+    Khoor/#zruog1
+    Segmentation fault
+
+Nopealla silmäyksellä koodista ja tulostuksesta ilmenee selvitettävää: "register" -avainsana, bad_messagen arvo NULL ja "Segmentation fault" tuloksessa. Segmentation fault ei ole koodin toiminnallisuus, jolloin tämä kertoo siis virheestä, joka koodissa tapahtuu.
+* Register-avainsana tarkoittaa, että se muuttuja tallennetaan mieluummin esimerkiksi prosessorin rekisteriin, eikä RAM-muistiin. Käyttötarkoituksena nopeuttaa arvon hakua muistista, ja ei pitäisi olla merkitystä tehtävään.
+* NULL-arvo tarkoittaa tyhjää arvoa. Koska tehtävässä NULL ei ole "NULL", se on siis myös avainsana, eikä tekstiä kuten good_messagen arvo. Tämä aiheuttaa lähes varmasti segmentation faultin.
+* Segmentation fault tarkoittaa käytännössä sitä, että ohjelma yrittää esim. päästä sisään muistiin paikkaan, johon sillä ei ole oikeutta. Koska segmentation fault ilmenee NULL -arvon yhteydessä, ohjelmalla ei siis ole pääsyä sinne, missä NULL arvo sijaitsee muistissa. 
+
+Selvittääkseni mistä "Segmentation fault" johtui, kokeilin myös suorittaa ohjelman ilman "bad_message", sekä eri "register int i":n arvolla. Esimerkiski i = 123:n tulos oli: "����꧛����ߩ", ja muutaman muun oli esimerkiksi: "Jgnnq."yqtnf0" ja "Rovvy6*�y|vn8". Sain tästä selville sen, että i:n arvolla on väliä tulostuksen sisällölle. 
+
+
+
+### Lähteet
+Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
+Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
