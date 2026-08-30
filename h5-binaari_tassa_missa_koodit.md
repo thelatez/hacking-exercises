@@ -7,9 +7,9 @@
 * Lab3: Nora Crackme -haasteita. Valitse yksi tiedosto ja yritä ratkaista binäärin salasana. Miten salasanan sai selville?
 * Lab4 (Vapaaehtoinen): Ratkaise binäärin salasana ja kerro miten sai selville.
 
-## Vastaus
+# Vastaus
 
-Lab0:
+## Lab0:
 
 Lab0:n ongelma on ylivuotava for-loop. Ongelma muodostuu siitä, että parametrinä annettu listan koko "size" kertoo taulukon (array) elementtien määrän, kun taas for-loop, joka aloittaa arvosta 0, laskee elementtien sijaintia taulukossa (5-kokoisen taulukon arvot ovat 0-4, eikä 1-5). 
 
@@ -24,6 +24,9 @@ Muutoksen jälkeen ohjelman suorittamisen tulos:
 
 <img width="823" height="509" alt="image" src="https://github.com/user-attachments/assets/4bb3c5ed-f934-4114-88fa-f62d745b1919" />
 
-Testataan toimivuus vielä käynnistämällä käännetty koodi: 
+Ohjelma toimii nyt halutulla tavalla. 
 
-<img width="431" height="132" alt="image" src="https://github.com/user-attachments/assets/c0845213-2bee-4356-92be-4af26fdd7fcd" />
+
+## Lab1:
+
+
