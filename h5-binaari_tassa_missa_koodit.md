@@ -41,10 +41,50 @@ Nopealla silmäyksellä koodista ja tulostuksesta ilmenee selvitettävää: "reg
 * NULL-arvo tarkoittaa tyhjää arvoa. Koska tehtävässä NULL ei ole "NULL", se on siis myös avainsana, eikä tekstiä kuten good_messagen arvo. Tämä aiheuttaa lähes varmasti segmentation faultin.
 * Segmentation fault tarkoittaa käytännössä sitä, että ohjelma yrittää esim. päästä sisään muistiin paikkaan, johon sillä ei ole oikeutta. Koska segmentation fault ilmenee NULL -arvon yhteydessä, ohjelmalla ei siis ole pääsyä sinne, missä NULL arvo sijaitsee muistissa. 
 
-Selvittääkseni mistä "Segmentation fault" johtui, kokeilin myös suorittaa ohjelman ilman "bad_message", sekä eri "register int i":n arvolla. Esimerkiski i = 123:n tulos oli: "����꧛����ߩ", ja muutaman muun oli esimerkiksi: "Jgnnq."yqtnf0" ja "Rovvy6*�y|vn8". Sain tästä selville sen, että i:n arvolla on väliä tulostuksen sisällölle. 
+Selvittääkseni mistä "Segmentation fault" johtui, kokeilin myös suorittaa ohjelman ilman "bad_message", sekä eri "register int i":n arvolla. Esimerkiksi i = 123:n tulos oli: "����꧛����ߩ", ja muutaman muun oli esimerkiksi: "Jgnnq."yqtnf0" ja "Rovvy6*�y|vn8". Sain tästä selville sen, että i:n arvolla on väliä tulostuksen sisällölle. Tämän tein myös lähinnä siksi, että haluttu tuloste on yhä hieman epäselvä. Ohjelman funktio "print_scrambled" kertoo, että sanasta "Hello, world." halutaan sekoitettu versio, mutta en ole varma haluttiinko ohjelmasta vain kirjainten järjestysten sekoitus, vai oliko  "Khoor/#zruog1" tosiaan hyvä tulos. Mennään kuitenkin sillä idealla eteenpäin, että good_messagen tuloste on haluttu versio, jolloin korjattavaa on vain "segmentation fault". 
 
+Tässä vaiheessa oli pakko käyttää tekoälyä ymmärtämään ensin koko koodin toiminnallisuus, koska en ole käyttänyt C:tä aikaisemmin. Sieltä sainkin selville ne asiat, joihin jäin jumiin: 
+* bad_message ja good_messagen "arvot" ovat osoittimia (pointer), ei suoraan mitä koodissa lukee
+* Koska C -kielessä ei ole merkkijonoja (string), on merkkijonot kirjaimen (char) taulukkoja. Esim. siis good_message on: [H, e, l, l, o, ,, , w, o, r, l, d, ., \0], jossa "\0" on tyypillinen null-päätösmerkki.
+* Tähti (*) itsessään tarkoittaa "dereference", eli pointerista -> arvoon. *message" tarkoittaa siis sitä arvoa, ei enää muistiosoitetta. Koska message on taulukko kirjaimia, *message palauttaa YHDEN merkin, ei koko jonoa. Tämä oli kenties suurin jumituskohta.
+* "printf("%c", (*message)+i)" tarkoittaa käytännössä: ota *message:lla kirjain (esim. H), ja lisää siihen i (3). Koska kirjaimet ovat C:ssä ASCII muodossa, lisäämme oikeasti H (72) +3 = 75, joka on K. Tästä syystä tulos on siis "Khoor...". Printf:n alussa oleva "%c" kertoo, että tämä näytetään kirjaimena, eikä kokonaislukuna (integer), jolloin se olisi ollut 75.
+* "while (*++message)":n *++message:sta suoritetaan "ensin" ++message. Tämä "siirtää" osoittimen seuraavaan kirjaimeen, esim. H -> e. Sen jälkeen tehdään uuden arvon *message, jolloin saadaan "e", eikä sen osoitin. Tällä varmistetaan, että tulos ei ole 0, joka on päätösehto, koska "while (0)" on aina epätosi (esimerkiksi siis taulukon lopussa oleva "\0" arvo on 0, jolloin while-loop loppuu). 
 
+### Miksi ohjelma siis kaatuu, voiko sen korjata?
+Ohjelma kaatuu, koska bad_message on pointer arvoon NULL. C-kielessä tämä kuitenkin tarkoittaa sitä, että se ei osoita mihinkään. Jos yrität "dereferensoida" NULL-osoittajaa, osoittaa se osoitteeseen "0", joka on käyttöjärjestelmän hallittavissa, eikä ohjelman. Yksi segmentation faultin syistä olikin juuri se, että ohjelmalla ei ole oikeutta sijaintiin. 
+
+Ohjeet ovat mitättömät, jolloin on vaikea tietää suoraan miten ohjelma halutaan "korjata". Yksi vaihtoehto olisi vain poistaa NULL-osoittava bad_message, mutta tämä ei välttämättä ole käytännöllinen ratkaisu oikeassa ohjelmassa. Muutetaankin koodia mieluummin niin, että NULL-osoittavaa ei vain käsitellä. Tässä muokattu koodi:
+
+    #include "stdio.h"
+    
+    void print_scrambled(char *message)
+    {
+      register int i = 3;
+      if (message) {
+        do {
+          printf("%c", (*message)+i);
+        } while (*++message);
+          printf("\n");
+      }
+    }
+    
+    int main()
+    {
+      char * bad_message = NULL;
+      char * good_message = "Hello, world.";
+    
+      print_scrambled(good_message);
+      print_scrambled(bad_message);
+    }
+
+Ja tulos GNU Debuggerista:
+
+<img width="741" height="140" alt="image" src="https://github.com/user-attachments/assets/6b407813-a4e0-4c76-8404-70ea9a4e3e96" />
+
+Tämä toimii siksi, että lisätty "if(message)" katsoo, onko messagella pointeria. Normaalissa tapauksessa on, mutta NULL tapauksessa ei.
 
 ### Lähteet
-Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
-Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
+* Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
+* Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
+* Lab1: https://stackoverflow.com/questions/26362340/printing-null-pointer-gives-segmentation-fault-core-dumped (miksi null-pointer johtaa segmentation faultiin)
+* Lab1: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 31.8.2026. Syötteenä: "Tässä koulutehtävän koodi, voisitko selittää sen toiminnallisuuden, ilman, että ratkaiset sen ongelmia."
