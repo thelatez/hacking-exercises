@@ -85,7 +85,16 @@ Ja tulos GNU Debuggerista:
 
 Tämä toimii siksi, että lisätty "if(message)" katsoo, onko messagella pointeria. Normaalissa tapauksessa on, mutta NULL tapauksessa ei.
 
-### Lähteet
+## Lab2:
+
+Kansiossa on seuraavat tiedostot: Makefile (jolla voi kääntää ohjelman passtr), passtr, passtr2o, passtr.c, README.md (joka sisältää ohjeita tehtävän tekemiseen).
+
+Tehtävässä halutaan, että ohjelmasta **passtr2o** löydetään salasana, ja mitä luultavasti oikean salasanan syöttäessä printattu lippu (flag). Aloitin ihan ensiksi tutustumalla passtr -ohjelmaan, suorittamalla sen (./passtr). Tästä ohjelmasta meillä on kuitenkin myös lähdekoodi, joten en pyöri sen parissa kauaa. Passtr -ohjelman salasanan saikin helposti saataville, muun muassa komennolla "strings passtr", tai katsomalla suoraan lähdekoodista. Ensimmäisenä tietenkin piti myös kokeilla passtr -ohjelman salasanaa passtr2o tehtävään, mutta tehtävä ei ole sentään niin helppo. Koska passtr2o:sta ei ole lähdekoodia, katsoin myös sen sisällön strings-komennolla. Sieltäkään ei kuitenkaan saanut enää salasanaa, vain sen, että se on mitä todennäköisemmin myös korkeintaan 19 merkkiä pitkä, sillä "What's the password?" rivin jälkeen tuli jälleen "%19s" (kuten passtr) ohjelmassa, joka kertoo siis, että jokin muuttuja on määritelty olemaan korkeintaan 19 merkkiä pitkä oleva string. Salasana on siis korkeintaan 20 merkkiä päätösmerkin (\0) kanssa.
+
+GDB:lläkään ei salasanaa löydä niin helposti, koska lähdekoodin puuttuminen rajoittaa debuggerin toimintoja huomattavasti. 
+
+
+## Lähteet
 * Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
 * Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
 * Lab1: https://stackoverflow.com/questions/26362340/printing-null-pointer-gives-segmentation-fault-core-dumped (miksi null-pointer johtaa segmentation faultiin)
