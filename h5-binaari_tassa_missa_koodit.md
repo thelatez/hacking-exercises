@@ -29,6 +29,8 @@ Ohjelma toimii nyt halutulla tavalla.
 
 ## Lab1:
 
+Huomiona se, että vastaus voi tulla aika epäselvänä läpi. Tässä kuitenkin nyt esillä se, kuinka ajatusprosessi ja toiminta eteni, enkä riisunut ongelmia pois.
+
 <img width="502" height="535" alt="image" src="https://github.com/user-attachments/assets/a6fb6766-1723-400c-b8fc-cbc565f6092a" />
 
 Alkuun katsoin ohjelman lähdekoodia komennolla: "more gdb_example1.c". Sieltä koodin toiminallisuus ja virhe eivät tulleet heti selviksi, joten suoritin myös ohjelman komennolla "./gdb.example1", jonka tuloksena oli: 
@@ -45,7 +47,7 @@ Selvittääkseni mistä "Segmentation fault" johtui, kokeilin myös suorittaa oh
 
 Tässä vaiheessa oli pakko käyttää tekoälyä ymmärtämään ensin koko koodin toiminnallisuus, koska en ole käyttänyt C:tä aikaisemmin. Sieltä sainkin selville ne asiat, joihin jäin jumiin: 
 * bad_message ja good_messagen "arvot" ovat osoittimia (pointer), ei suoraan mitä koodissa lukee
-* Koska C -kielessä ei ole merkkijonoja (string), on merkkijonot kirjaimen (char) taulukkoja. Esim. siis good_message on: [H, e, l, l, o, ,, , w, o, r, l, d, ., \0], jossa "\0" on tyypillinen null-päätösmerkki.
+* Koska C -kielessä ei ole merkkijonoja (string), on merkkijonot kirjaimen (char) taulukkoja. Esim. siis good_message on: [H, e, l, l, o, ,,  , w, o, r, l, d, ., \0], jossa "\0" on tyypillinen null-päätösmerkki.
 * Tähti (*) itsessään tarkoittaa "dereference", eli pointerista -> arvoon. *message" tarkoittaa siis sitä arvoa, ei enää muistiosoitetta. Koska message on taulukko kirjaimia, *message palauttaa YHDEN merkin, ei koko jonoa. Tämä oli kenties suurin jumituskohta.
 * "printf("%c", (*message)+i)" tarkoittaa käytännössä: ota *message:lla kirjain (esim. H), ja lisää siihen i (3). Koska kirjaimet ovat C:ssä ASCII muodossa, lisäämme oikeasti H (72) +3 = 75, joka on K. Tästä syystä tulos on siis "Khoor...". Printf:n alussa oleva "%c" kertoo, että tämä näytetään kirjaimena, eikä kokonaislukuna (integer), jolloin se olisi ollut 75.
 * "while (*++message)":n *++message:sta suoritetaan "ensin" ++message. Tämä "siirtää" osoittimen seuraavaan kirjaimeen, esim. H -> e. Sen jälkeen tehdään uuden arvon *message, jolloin saadaan "e", eikä sen osoitin. Tällä varmistetaan, että tulos ei ole 0, joka on päätösehto, koska "while (0)" on aina epätosi (esimerkiksi siis taulukon lopussa oleva "\0" arvo on 0, jolloin while-loop loppuu). 
