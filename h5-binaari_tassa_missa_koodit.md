@@ -101,8 +101,44 @@ GDB:lläkään ei salasanaa löydä niin helposti, koska lähdekoodin puuttumine
 
 (huom. en laita breakpointtia funktiolle "check_password", koska alkukokeiluiden yhteydessä se ei toiminut). Nyt meillä on ohjelmasta Assembly-ohjeita. Tästä on kuitenkin vielä aika vaikea löytää mikä riveistä edes saattaisi sisältää etsimämme salasanan, saatika sitten miten sen saa annetulla informaatiolla selville.
 
+Käytin tässä aika paljon aikaa tutkiessa eri assemblyn ohjeita, kuten mov, call, "jne", "cmp", "or", "jle", "je", "test", "sub" ja niin edespäin. Netistä löysin muun muassa seuraavia GDB:n ominaisuuksia, joilla voi tutkia rekistereitä:
+
+    info registers
+    x/s $<rekisteri> , esim. x/s $rsi
+
+Jos haluaa myös nähdä assemblyn rivit uudestaan, voi käyttää komentoa:
+
+    x/i $pc
+
+Tämä näyttää nykyisen rivin, rivien määrää voi myös nostaa laittamalla i:n eteen jonkin numeron, esim. 10.
+    
+Kuitenkaan vielä salasanan löytäminen ei ole helppoa/mahdollista, koska emme ole edes syöttäneet vielä salasanaa. Laitetaan siis breakpoint johonkin väliin, missä salasana on jo syötetty, mutta ohjelman suoritus ei ole vielä päättynyt. Trial-and-error kokeiluden jälkeen huomasin, että riville "x5555555550fb <main+123>:	call   0x55555555525a <mAsdf3a>" Hakasuluissa (<>) oleva "mAsdf3a" vaikutti olevan joku funktio, koska muistin sen olevan "strings" komennon listalla, ja siihen pystyi laittamaan breakpointin suoraan nimellä
+
+    break mAsdf3a
+
+Tässä vaiheessa poistinkin aikaisemman breakpointin mainista, ja käynnistin debuggaamisen uudelleen.
+
+Nyt salasanan pystyi antamaan, ja ohjelma ei vielä keskeytynyt. Annoin salasanaksi "testisalasana". Tässä vaiheessa kävin myös katsomassa uusiksi rekisterit, ja yllätyksellisesti rekisterit rsi ja rbx sisälsivät syötteeni. Lisäksi rekisteri rdi sisälti myös kiinnostavan stringin, "anLTj4u8". Myös tämän muistin nähneeni "strings"-in avulla. Kokeilin myös tässä vaiheessa salasanaksi rdi:n sisältöä, mutta se ei kelvannut. (Rekisterit rsi, rbx ja rdi pitivät huomiotani eniten, koska ne olivat ainoat rekisterit, jotka sisälsivät suhteellisen selkeää tietoa. Muut olivat joko tyhjiä, tai epäselviä tuloksia, kuten rip: "ATUH\211\375SH\...".
+
+<img width="313" height="124" alt="image" src="https://github.com/user-attachments/assets/7075092d-5802-4b51-a6f0-7ccc3e63fe1e" />
+
+Breakpointtia ei juuri pystynyt laittamaan myöhempään vaiheeseen ohjelmaa, koska silloin heti salasanan kysymisen jälkeen sovelluksen suoritus olisi päättynyt siihen, että virheellinen salasana. Koodissa on siis jokin ehto, joka lopettaa suorittamisen ajoissa, ja tietylle koodiriville ei siis ikinä päästä. Tästä syystä jäin hieman jumiin, joten jouduin kysymään tekoälyltä apua lähinnä Assemblyn tulkitsemiseen. Tuloksena olikin se, että koodi vertailee vaiheessa kahden stringin pituutta toisiinsa. Jos pituudet eivät ole samat, ohjelma päättyy. No, ainoat vertailtavat stringit joihin minulla oli vaikutusta oli tietenkin syötetty salasana, ja löydetty "anLTj4u8". Tekoäly suositteli kokeilemaan, mitä tapahtuu jos salasana on 8-merkkiä pitkä, kuten löydetty teksti. Alla kuva Assemblyn kohdasta, jossa vertailu tapahtuu:
+
+<img width="672" height="215" alt="image" src="https://github.com/user-attachments/assets/266e6a1f-1621-44ff-bdc6-f025c9553542" />
+
+Lyhyesti selitettynä: kun ohjelma "call" strlen-funktiota, se laskee stringin pituuden. Se tapahtuu kuvassa kahdesti. Niiden tulos tallenetaan "mov" avulla johonkin muuttujaan yms. Loppupäässä oleva "cmp" on compare eli vertaile. Se vertailee tulosten pituutta. Sen jälkeen tuleva "jne" (jump if not equal) tarkoittaa sitä, että koodi hyppää toiseen kohtaan, jos edellä oleva compare ei ollut equal, muuten toiminta jatkuu lineaarisesti. Jos salasana ei siis ole 8-merkkiä pitkä, ohjelma hyppää osoitteeseen "0x5555555552af <mAsdf3a+85>", joka sattuu olemaan aivan koodin loppupäässä, jossa käy jo "siivousoperaatiot", ja ihan hetken päästä myös ret (return), eli ohjelman lopetus. 
+
+Nyt tiedetään, että seuraava breakpoint kannattaa laittaa vertailun jälkeen, ja syötteeksi antaa 8 merkkiä pitkä salasana. Annetaan salasanaksi vaikkapa salasana, ja breakpointiksi muistiosoite "0x555555555281", joka on heti "jle" -ohjeen jälkeen. Teen tämän kokonaan uudessa gdb-instanssissa, eli quit -> gdb passtr2o.
+
+    break *0x555555555281
+    run
+    salasana
+
+Nyt rekisterit ovat muuttuneet hieman, esimerkiksi "salasana" löytyy rekistereistä rbx ja rdi, ja ohjelman teksti rekisteristä rbp. Katsotaan taas ohjelmakoodia, "x/30i $pc".
+    
 ## Lähteet
 * Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
 * Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
 * Lab1: https://stackoverflow.com/questions/26362340/printing-null-pointer-gives-segmentation-fault-core-dumped (miksi null-pointer johtaa segmentation faultiin)
 * Lab1: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 31.8.2026. Syötteenä: "Tässä koulutehtävän koodi, voisitko selittää sen toiminnallisuuden, ilman, että ratkaiset sen ongelmia."
+* Lab2: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 1.9.2026. Mallia käytetty ymmärtämään tiettyjä osia assembly-koodista, kuitenkin käskien, että ei ratkaise tehtävää suoraan. 
