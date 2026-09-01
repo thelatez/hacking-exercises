@@ -223,6 +223,9 @@ TL:DR, voidaan lisätä jokaiseen RSI kirjaimeen saman indeksin RDX (rsi on "pas
 <img width="611" height="37" alt="image" src="https://github.com/user-attachments/assets/c9f7f303-b2dc-4482-ad2d-1925d665397a" />
 
 
+## Oma disclaimer
+Tehtävänannossa sanottiin että tekoälyä ei tulisi käyttää, mutta tehtävien saaminen loppuun asti olisi vienyt aivan turhan paljon "turhaa aikaa". Tehtäviin meni silti keskimääräisesti useita tunteja per tehtävä, ennen tekoälyä, ja siitäkin varmistin että tekoäly vain auttaa, ja kävin asioita läpi ymmärtääkseni asiat myös itse.
+
 ## Lähteet
 * Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
 * Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
