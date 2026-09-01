@@ -155,6 +155,8 @@ Lisäämme siis parillisiin 3, vähennämme parittomista 7. Esim. siis "a" on 97
 
 <img width="690" height="86" alt="image" src="https://github.com/user-attachments/assets/ff4a1f9b-ba65-4894-b7b0-5633f3f4e44f" />
 
+GNU Debuggerista oppi uutta mm. x/s komennot, katsomaan tarkemmin rekistereitä ja seuraamaan eri ohjeita edes takaisin. Koska ei ole lähdekoodia, breakpointtia oli myös vaikeampi saada haluttuun paikkaan suoraan. 
+
 
 ## Lab3:
 
@@ -178,7 +180,7 @@ Tästä saadaan selville se, että rivi jolla printataan "Yes..." on haluamamme 
 
 <img width="676" height="402" alt="image" src="https://github.com/user-attachments/assets/3594d563-2261-476c-89be-d6bd0af38488" />
 
-Kuvassa alin rivi on nyt "0x00005555555551e5 <+88>:	jne    0x555555555219 <main+140>". Se vie hyvin lähelle haluamaamme osoitetta, vain 3 ohjetta edellä. Voimme heti ohjeista ottaa ensimmäisen jne-ohjeen ja sitä edeltävät pois tarkemmasta huomiosta, koska ne johtavat vastaukseen "Need exactly one argument". Se siis vasta käsittelee syötettyjen argumenttien määrää, ei sisältöä. Siihen väliin voisi siis laittaa esimerkiksi breakpointin, joka ei kuitenkaan nyt ole tarpeellista.
+Kuvassa alin rivi on nyt "0x00005555555551e5 <+88>:	jne    0x555555555219 <main+140>". Se vie hyvin lähelle haluamaamme osoitetta, vain 3 eroa (+140 vs +143). Voimme heti ohjeista ottaa ensimmäisen jne-ohjeen ja sitä edeltävät pois tarkemmasta huomiosta, koska ne johtavat vastaukseen "Need exactly one argument". Se siis vasta käsittelee syötettyjen argumenttien määrää, ei sisältöä. Siihen väliin voisi siis laittaa esimerkiksi breakpointin, joka ei kuitenkaan nyt ole tarpeellista.
 
 Siitä seuraava jne johtaa väärään salasanaan, jolloin meidän pitää varmistaa, että sitä ennen oleva "cmp" -vertailukäsky palauttaa tosi. Kyseinen cmp vertaileekin "$0x8" ja "‰rax", eli käytännössä katsoo, onko rax koko 8. Rax taas tässä tarkoituksessa tarkoittaa "call strlen" kanssa strlenin palautusarvoa, eli rdi:n pituutta. Tyypillisesti rdi varsinkin ennen "call" on ensimmäinen funktion parametri -> strlen(rdi). %rax tai %eax (rax:n alimmat 32-bittiä) ovat varsinkin funktion jälkeen tyypillisiä palautussijainteja. Esim. jos funktio palauttaa 8 ja sitä seuraa %rax, rax pitäisi olla 8. Koodi siis selvittää, onko rdi:n pituus 8, jos ei -> väärä salasana. Halutussa tilanteessa rdi:n pituus on siis 8.
 
@@ -216,7 +218,7 @@ Sen jälkeen verrataan taas 0 ja rdi + indeksi. Jos tämä on tosi (tulos 0), pa
 
 ### No miten se salasana nyt saadaan siis selville?
 
-Yksinkertaisesti, voidaan lisätä jokaiseen RSI kirjaimeen saman indeksin RDX (rsi on "password", RDX on "0x03 0x05 0x02 0x04 0x01 0x00 0x03 0x01". Esim. rsi[0] + rdx[0] => 70 + 3 = 73 = "s". rsi[1] + rdx[1] => "a" -> 97 + 5 = 102 = "f"... == **sfuwxoue**. 
+TL:DR, voidaan lisätä jokaiseen RSI kirjaimeen saman indeksin RDX (rsi on "password", RDX on "0x03 0x05 0x02 0x04 0x01 0x00 0x03 0x01". Esim. rsi[0] + rdx[0] => 70 + 3 = 73 = "s". rsi[1] + rdx[1] => "a" -> 97 + 5 = 102 = "f"... == **sfuwxoue**. 
 
 <img width="611" height="37" alt="image" src="https://github.com/user-attachments/assets/c9f7f303-b2dc-4482-ad2d-1925d665397a" />
 
@@ -226,5 +228,5 @@ Yksinkertaisesti, voidaan lisätä jokaiseen RSI kirjaimeen saman indeksin RDX (
 * Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
 * Lab1: https://stackoverflow.com/questions/26362340/printing-null-pointer-gives-segmentation-fault-core-dumped (miksi null-pointer johtaa segmentation faultiin)
 * Lab1: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 31.8.2026. Syötteenä: "Tässä koulutehtävän koodi, voisitko selittää sen toiminnallisuuden, ilman, että ratkaiset sen ongelmia."
-* Lab2: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 1.9.2026. Mallia käytetty ymmärtämään tiettyjä osia assembly-koodista ja GDB käskyjä, kuitenkin määräten, että antaa vain pieniä ohjeita, eikä ratkaise tehtävää suoraan.
+* Lab2, Lab3: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 1.9.2026. Mallia käytetty ymmärtämään tiettyjä osia assembly-koodista ja GDB käskyjä, kuitenkin määräten, että antaa vain pieniä ohjeita, eikä ratkaise tehtävää suoraan.
 * Lab2: https://www.rapidtables.com/convert/number/ascii-hex-bin-dec-converter.html (paikka jossa laskin lab2 salasanan)
