@@ -155,6 +155,10 @@ Lisäämme siis parillisiin 3, vähennämme parittomista 7. Esim. siis "a" on 97
 
 <img width="690" height="86" alt="image" src="https://github.com/user-attachments/assets/ff4a1f9b-ba65-4894-b7b0-5633f3f4e44f" />
 
+##Lab3:
+
+Tehtävässä pitää valita yksi crackme:stä. Katsoin Noran sivustoilta tehtävistä hieman lisätietoa, ja ensimmäiset kaksi olivat liian helppoja, kolmas taas turhan vaikea? Otin kuitenkin kolmannen, tiedoston **crackme03e.64**. Vältän lähdekoodin käyttämistä täysin, koska oletettavasti sitä ei ole. 
+
 
 
     
