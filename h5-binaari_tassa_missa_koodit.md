@@ -158,11 +158,37 @@ Lisäämme siis parillisiin 3, vähennämme parittomista 7. Esim. siis "a" on 97
 
 ## Lab3:
 
-Tehtävässä pitää valita yksi crackme:stä. Katsoin Noran sivustoilta tehtävistä hieman lisätietoa, ja ensimmäiset kaksi olivat liian helppoja, kolmas taas turhan vaikea? Otin kuitenkin kolmannen, tiedoston **crackme03e.64**. Vältän lähdekoodin käyttämistä täysin, koska oletettavasti sitä ei ole. 
+Tehtävässä pitää valita yksi crackme:stä. Katsoin Noran sivustoilta tehtävistä hieman lisätietoa, ja ensimmäiset kaksi olivat liian helppoja, kolmas taas turhan vaikea? Otin kuitenkin kolmannen, tiedoston **crackme03e.64**. En käytä lähdekoodia tehtävän ratkaisemiseen.
+
+Aloitetaan taas tyypillisellä tavalla (huom. koska ohjelma haluaa heti parametrinä salasanan eikä kysy sitä jälkikäteen, lisätään se "run" jälkeen):
+
+    gdb crackme03e.64
+    break main
+    run salasana
+
+<img width="805" height="758" alt="image" src="https://github.com/user-attachments/assets/9784b392-3b1b-4d6b-ae7f-4c5b08fe5b54" />
 
 
+Tämä lähdekoodi näyttääkin lab2 verrattuna hieman monimutkaisemmalta. Ohjelma sisältää nimittäin enemmän mov, movb, movabs ja lea -ohjeita, jotka voivat kaikki liittyä tavalla tai toisella datan siirtämiseen tai käsittelyyn. Ensin lähden ohjelmasta etsimään suuntaa, mihin haluamme päästä. Esimerkiksi puolivälistä eteenpäin ohjelmasta löytyy kolme kommentoitua (#...) muistiosoitetta. Nämä ovat tyypillisesti printtejä, jolloin etsin näistä ensin hyvän tuloksen printin (ylhäältä alas):
+* x/s 0x555555556034 => "No, %s is not correct.\n"
+* x/s 0x555555556004 => "Need exactly one argument."
+* x/s 0x55555555601f => "Yes, %s is correct!\n"
 
-    
+Tästä saadaan selville se, että rivi jolla printataan "Yes..." on haluamamme paikka. Se on siis: "0x000055555555521c <+143>:	lea    0xdfc(%rip),%rdi". Sitten katsomme ylempää, mitkä ehdot täytyy täyttyä, jotta pääsemme hyppäämään oikeaan tulokseen.
+
+<img width="676" height="402" alt="image" src="https://github.com/user-attachments/assets/3594d563-2261-476c-89be-d6bd0af38488" />
+
+Kuvassa alin rivi on nyt "0x00005555555551e5 <+88>:	jne    0x555555555219 <main+140>". Se vie hyvin lähelle haluamaamme osoitetta, vain 3 ohjetta edellä. Voimme heti ohjeista ottaa ensimmäisen jne-ohjeen ja sitä edeltävät pois tarkemmasta huomiosta, koska ne johtavat vastaukseen "Need exactly one argument". Se siis vasta käsittelee syötettyjen argumenttien määrää, ei sisältöä. Siihen väliin voisi siis laittaa esimerkiksi breakpointin, joka ei kuitenkaan nyt ole tarpeellista.
+
+Siitä seuraava jne johtaa väärään salasanaan, jolloin meidän pitää varmistaa, että sitä ennen oleva "cmp" -vertailukäsky palauttaa tosi. Kyseinen cmp vertaileekin "$0x8" ja "‰rax", eli käytännössä katsoo, onko rax koko 8. Rax taas tässä tarkoituksessa tarkoittaa "call strlen" kanssa strlenin palautusarvoa, eli rdi:n pituutta. Tyypillisesti rdi varsinkin ennen "call" on ensimmäinen funktion parametri -> strlen(rdi). %rax on varsinkin funktion jälkeen tyypillinen palautussijainti. Esim. jos funktio palauttaa 8 ja sitä seuraa %rax, rax pitäisi olla 8. Koodi siis selvittää, onko rdi:n pituus 8, jos ei -> väärä salasana. Halutussa tilanteessa rdi:n pituus on siis 8.
+
+No, mikä on rdi, eli rbx? Sitä varten voimme mennä eteenpäin ohjelmassa, vaikkapa juuri ennen, kuin tärkeä "cmp" suoritetaan:
+
+<img width="511" height="175" alt="image" src="https://github.com/user-attachments/assets/53ace03e-c8f8-4a86-8bc8-58ac1fd0cd2e" />
+
+Tästä voimme nyt nähdä, että rax on tosiaan 0x8 = 8, ja rdi sekä rbx ovat molemmat "salasana", se minkä syötin.  
+
+
 ## Lähteet
 * Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
 * Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
