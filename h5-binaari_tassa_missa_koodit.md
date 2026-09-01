@@ -112,17 +112,17 @@ Jos haluaa myös nähdä assemblyn rivit uudestaan, voi käyttää komentoa:
 
 Tämä näyttää nykyisen rivin, rivien määrää voi myös nostaa laittamalla i:n eteen jonkin numeron, esim. 10.
     
-Kuitenkaan vielä salasanan löytäminen ei ole helppoa/mahdollista, koska emme ole edes syöttäneet vielä salasanaa. Laitetaan siis breakpoint johonkin väliin, missä salasana on jo syötetty, mutta ohjelman suoritus ei ole vielä päättynyt. Trial-and-error kokeiluden jälkeen huomasin, että riville "x5555555550fb <main+123>:	call   0x55555555525a <mAsdf3a>" Hakasuluissa (<>) oleva "mAsdf3a" vaikutti olevan joku funktio, koska muistin sen olevan "strings" komennon listalla, ja siihen pystyi laittamaan breakpointin suoraan nimellä
+Kuitenkaan vielä salasanan löytäminen ei ole helppoa/mahdollista, koska emme ole edes syöttäneet vielä salasanaa. Laitetaan siis breakpoint johonkin väliin, missä salasana on jo syötetty, mutta ohjelman suoritus ei ole vielä päättynyt. Trial-and-error kokeiluden jälkeen huomasin, että riville "x5555555550fb <main+123>:	call   0x55555555525a <mAsdf3a>" oli paras sijainti. Hakasuluissa (<>) oleva "mAsdf3a" vaikutti olevan joku funktio, koska muistin sen olevan "strings" komennon listalla, ja siihen pystyikin laittamaan breakpointin suoraan nimellä.
 
     break mAsdf3a
 
 Tässä vaiheessa poistinkin aikaisemman breakpointin mainista, ja käynnistin debuggaamisen uudelleen.
 
-Nyt salasanan pystyi antamaan, ja ohjelma ei vielä keskeytynyt. Annoin salasanaksi "testisalasana". Tässä vaiheessa kävin myös katsomassa uusiksi rekisterit, ja yllätyksellisesti rekisterit rsi ja rbx sisälsivät syötteeni. Lisäksi rekisteri rdi sisälti myös kiinnostavan stringin, "anLTj4u8". Myös tämän muistin nähneeni "strings"-in avulla. Kokeilin myös tässä vaiheessa salasanaksi rdi:n sisältöä, mutta se ei kelvannut. (Rekisterit rsi, rbx ja rdi pitivät huomiotani eniten, koska ne olivat ainoat rekisterit, jotka sisälsivät suhteellisen selkeää tietoa. Muut olivat joko tyhjiä, tai epäselviä tuloksia, kuten rip: "ATUH\211\375SH\...".
+Nyt salasanan pystyi antamaan, ja ohjelma ei vielä keskeytynyt. Annoin salasanaksi "testisalasana". Tässä vaiheessa kävin myös katsomassa uusiksi rekisterit, ja yllätyksellisesti rekisterit rsi ja rbx sisälsivät syötteeni. Lisäksi rekisteri rdi sisälti myös kiinnostavan stringin, "anLTj4u8". Myös tämän muistin nähneeni "strings"-in avulla. Kokeilin myös tässä vaiheessa salasanaksi rdi:n sisältöä, mutta se ei kelvannut. (Rekisterit rsi, rbx ja rdi pitivät huomiotani eniten, koska ne olivat ainoat rekisterit, jotka sisälsivät suhteellisen selkeää tietoa. Muut olivat joko tyhjiä, tai epäselviä tuloksia, kuten %rip: "ATUH\211\375SH\...".
 
 <img width="313" height="124" alt="image" src="https://github.com/user-attachments/assets/7075092d-5802-4b51-a6f0-7ccc3e63fe1e" />
 
-Breakpointtia ei juuri pystynyt laittamaan myöhempään vaiheeseen ohjelmaa, koska silloin heti salasanan kysymisen jälkeen sovelluksen suoritus olisi päättynyt siihen, että virheellinen salasana. Koodissa on siis jokin ehto, joka lopettaa suorittamisen ajoissa, ja tietylle koodiriville ei siis ikinä päästä. Tästä syystä jäin hieman jumiin, joten jouduin kysymään tekoälyltä apua lähinnä Assemblyn tulkitsemiseen. Tuloksena olikin se, että koodi vertailee vaiheessa kahden stringin pituutta toisiinsa. Jos pituudet eivät ole samat, ohjelma päättyy. No, ainoat vertailtavat stringit joihin minulla oli vaikutusta oli tietenkin syötetty salasana, ja löydetty "anLTj4u8". Tekoäly suositteli kokeilemaan, mitä tapahtuu jos salasana on 8-merkkiä pitkä, kuten löydetty teksti. Alla kuva Assemblyn kohdasta, jossa vertailu tapahtuu:
+Breakpointtia ei juuri pystynyt laittamaan myöhempään vaiheeseen ohjelmaa, koska silloin heti salasanan kysymisen jälkeen sovelluksen suoritus olisi päättynyt siihen, että virheellinen salasana. Koodissa on siis jokin ehto, joka lopettaa suorittamisen ajoissa, ja tietylle koodiriville ei siis ikinä päästä. Tästä syystä jäin hieman jumiin, joten jouduin kysymään tekoälyltä apua lähinnä Assemblyn tulkitsemiseen. Tuloksena olikin se, että koodi vertailee eräässä vaiheessa kahden stringin pituutta toisiinsa. Jos pituudet eivät ole samat, ohjelma päättyy. No, ainoat vertailtavat stringit joihin minulla oli vaikutusta oli tietenkin syötetty salasana, ja löydetty "anLTj4u8". Tekoäly suositteli kokeilemaan, mitä tapahtuu jos salasana on 8-merkkiä pitkä, kuten löydetty teksti. Alla kuva Assemblyn kohdasta, jossa vertailu tapahtuu:
 
 <img width="672" height="215" alt="image" src="https://github.com/user-attachments/assets/266e6a1f-1621-44ff-bdc6-f025c9553542" />
 
@@ -138,21 +138,20 @@ Nyt rekisterit ovat muuttuneet hieman, esimerkiksi "salasana" löytyy rekisterei
 
 <img width="674" height="610" alt="image" src="https://github.com/user-attachments/assets/2221372b-769b-4172-9543-52be4992734a" />
 
-Tässä vaiheessa selkeyttäisi, jos rekisterit ja niiden sisältö on kirjattuna ylös:
+Tässä vaiheessa selkeyttäisi, jos rekisterit ja niiden sisältö on kirjattuna ylös. Tässä siis nykyinen tilanne päätellen aikaisempia tapahtumia (ja Assemblyä) sekä avattavia rekistereitä:
 * %rbp = "anLTj4u8"
 * %rbx = "salasana"
 * %rax = indeksi (esim. jokutaulukko[indeksi], hakee siis kirjaintaulukosta (stringistä) tietyn kirjaimen indeksin kohdalla).
 * %ecx = "salasana" -stringin kirjain kohdassa indeksi
 * %edx = "anLTj4u8" -stringin kirjain kohdassa indeksi
 
-Rivi "0x555555555290 <mAsdf3a+54>:	test   $0x1,%al" tarkoittaa: "Onko indeksi tällä hetkellä parillinen/pariton?" ja sen pohjalta tehdään päätös "je":n avulla: jos parillinen, lisätään kirjaimen arvoon 3 (0x555555555299 <mAsdf3a+63>:	add    $0x3,%edx), jos pariton, vähennetään sen sijaan 7 (0x555555555294 <mAsdf3a+58>:	sub    $0x7,%edx). Oletan siis, että tämä on loop, joka käy koko kirjainketjun rekisterissä edx ("anLTj4u8"), läpi ja nostaa tai laskee kirjainten ASCII-arvoa ehdon mukaan. Lopussa oleva cmp vertaa %ecx (syöttämämme salasanaa) ja uutta %edx (muokattu "anLTj4u8").
+Rivi "0x555555555290 <mAsdf3a+54>:	test   $0x1,%al" tarkoittaa: "Onko indeksi tällä hetkellä parillinen/pariton?" ja sen pohjalta tehdään päätös "je":n avulla: jos parillinen, lisätään kirjaimen arvoon 3 (0x555555555299 <mAsdf3a+63>:	add    $0x3,%edx), jos pariton, vähennetään sen sijaan 7 (0x555555555294 <mAsdf3a+58>:	sub    $0x7,%edx). Oletan siis, että tämä on loop, joka käy koko kirjainketjun rekisteristä edx ("anLTj4u8"), läpi ja nostaa tai laskee kirjainten ASCII-arvoa ehdon mukaan. Lopussa oleva cmp vertaa %ecx (syöttämämme salasanaa) ja uutta %edx (muokattu "anLTj4u8").
 
-
-Seuraavalla komennolla saa kirjaimet ja niiden ASCII luvut %rbp:stä:
+Seuraavalla komennolla saa 8 kirjainta ja niiden ASCII luvut %rbp:stä:
 
     x/8cb $rbp
 
-Lisäämme siis parillisiin 3, vähennämme parittomista 7. Esim. siis "a" on 97, jolloin siitä tulee 10, "n" on 110, jolloin siitä tulee 103 jne. Salasana on siis **dgOMm-x1**, Lippu: **FLAG{Lari-rsvRDx04WMBZpuwg4qfYwzdcvVa0oym}**
+Lisäämme siis parillisiin 3, vähennämme parittomista 7. Esim. siis "a" on 97, jolloin siitä tulee 100, "n" on 110, jolloin siitä tulee 103 jne. Salasana on siis **dgOMm-x1**, Lippu: **FLAG{Lari-rsvRDx04WMBZpuwg4qfYwzdcvVa0oym}**
 
 <img width="690" height="86" alt="image" src="https://github.com/user-attachments/assets/ff4a1f9b-ba65-4894-b7b0-5633f3f4e44f" />
 
@@ -164,4 +163,5 @@ Lisäämme siis parillisiin 3, vähennämme parittomista 7. Esim. siis "a" on 97
 * Lab1: https://www.scaler.com/topics/segmentation-fault-in-c-cpp/ (mikä on segmentation fault)
 * Lab1: https://stackoverflow.com/questions/26362340/printing-null-pointer-gives-segmentation-fault-core-dumped (miksi null-pointer johtaa segmentation faultiin)
 * Lab1: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 31.8.2026. Syötteenä: "Tässä koulutehtävän koodi, voisitko selittää sen toiminnallisuuden, ilman, että ratkaiset sen ongelmia."
-* Lab2: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 1.9.2026. Mallia käytetty ymmärtämään tiettyjä osia assembly-koodista, kuitenkin käskien, että ei ratkaise tehtävää suoraan. 
+* Lab2: Käytetty ilmaista OpenAI:n ChatGPT -laajaa kielimallia 1.9.2026. Mallia käytetty ymmärtämään tiettyjä osia assembly-koodista ja GDB käskyjä, kuitenkin määräten, että antaa vain pieniä ohjeita, eikä ratkaise tehtävää suoraan.
+* Lab2: https://www.rapidtables.com/convert/number/ascii-hex-bin-dec-converter.html (paikka jossa laskin lab2 salasanan)
