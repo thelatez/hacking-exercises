@@ -180,13 +180,45 @@ Tästä saadaan selville se, että rivi jolla printataan "Yes..." on haluamamme 
 
 Kuvassa alin rivi on nyt "0x00005555555551e5 <+88>:	jne    0x555555555219 <main+140>". Se vie hyvin lähelle haluamaamme osoitetta, vain 3 ohjetta edellä. Voimme heti ohjeista ottaa ensimmäisen jne-ohjeen ja sitä edeltävät pois tarkemmasta huomiosta, koska ne johtavat vastaukseen "Need exactly one argument". Se siis vasta käsittelee syötettyjen argumenttien määrää, ei sisältöä. Siihen väliin voisi siis laittaa esimerkiksi breakpointin, joka ei kuitenkaan nyt ole tarpeellista.
 
-Siitä seuraava jne johtaa väärään salasanaan, jolloin meidän pitää varmistaa, että sitä ennen oleva "cmp" -vertailukäsky palauttaa tosi. Kyseinen cmp vertaileekin "$0x8" ja "‰rax", eli käytännössä katsoo, onko rax koko 8. Rax taas tässä tarkoituksessa tarkoittaa "call strlen" kanssa strlenin palautusarvoa, eli rdi:n pituutta. Tyypillisesti rdi varsinkin ennen "call" on ensimmäinen funktion parametri -> strlen(rdi). %rax on varsinkin funktion jälkeen tyypillinen palautussijainti. Esim. jos funktio palauttaa 8 ja sitä seuraa %rax, rax pitäisi olla 8. Koodi siis selvittää, onko rdi:n pituus 8, jos ei -> väärä salasana. Halutussa tilanteessa rdi:n pituus on siis 8.
+Siitä seuraava jne johtaa väärään salasanaan, jolloin meidän pitää varmistaa, että sitä ennen oleva "cmp" -vertailukäsky palauttaa tosi. Kyseinen cmp vertaileekin "$0x8" ja "‰rax", eli käytännössä katsoo, onko rax koko 8. Rax taas tässä tarkoituksessa tarkoittaa "call strlen" kanssa strlenin palautusarvoa, eli rdi:n pituutta. Tyypillisesti rdi varsinkin ennen "call" on ensimmäinen funktion parametri -> strlen(rdi). %rax tai %eax (rax:n alimmat 32-bittiä) ovat varsinkin funktion jälkeen tyypillisiä palautussijainteja. Esim. jos funktio palauttaa 8 ja sitä seuraa %rax, rax pitäisi olla 8. Koodi siis selvittää, onko rdi:n pituus 8, jos ei -> väärä salasana. Halutussa tilanteessa rdi:n pituus on siis 8.
 
 No, mikä on rdi, eli rbx? Sitä varten voimme mennä eteenpäin ohjelmassa, vaikkapa juuri ennen, kuin tärkeä "cmp" suoritetaan:
 
 <img width="511" height="175" alt="image" src="https://github.com/user-attachments/assets/53ace03e-c8f8-4a86-8bc8-58ac1fd0cd2e" />
 
-Tästä voimme nyt nähdä, että rax on tosiaan 0x8 = 8, ja rdi sekä rbx ovat molemmat "salasana", se minkä syötin.  
+Tästä voimme nyt nähdä, että rax on tosiaan 8, ja rdi sekä rbx ovat molemmat "salasana", se minkä syötin. Tuleva cmp ja jne eivät tule siis olemaan ongelma, sillä jatkamme niiden ohi 8-merkkisellä salasanalla "salasana". Siirryn samalla juuri ennen siirtymistä "check_pw" -funktioon. Katson vielä rekisterit rdx, rsi ja rbx, sillä niitä käsitellään juuri ennen salasanan tarkistusfunktiota. 
+* x/s $rbx => "salasana"
+* x/s $rsi => "password"
+* x/8bx $rdx => "0x03 0x05 0x02 0x04 0x01 0x00 0x03 0x01" (tarvittu tähän hieman apua, koska tarvitiin "x/8bx")
+  
+Tämä tehtävä näyttää toimivan suuremmaksi osaksi samalla tavalla kuin lab2:ssa ollut pala tekstiä. Tätä "password" luultavasti muunnetaan jollain luvuilla, jolloin siitä tulee oikeasti haluttu salasana. Sitten sitä verrataan "salasana":aan. Tämän varmistamiseksi meidän pitää kuitenkin myös käydä "check_pw":n sisällä:
+
+    break check_pw
+    c
+
+Nyt, kun olemme pysähtyneenä check_pw-funktion sisään, katsotaan jälleen ohjeita: 
+
+<img width="779" height="360" alt="image" src="https://github.com/user-attachments/assets/cf5b8677-51b7-445d-8642-751902f9fdd5" />
+
+Alun "mov $0x0, %eax" tarkoittaa, että eax-rekisteriin siirretään arvo 0, jolloin sen arvo on siis 0. Koska eax on rax:n alimmat 32-bittiä, myös rax on nyt 0. 
+
+Seuraava ohje "movzbl (%rdx,%rax,1),%ecx" tarkoittaa käytännössä rdx + rax * 1, eli rdx + 0*1 = rdx. Tämä tallennetaan ecx:ään. Huom. rdx:ssä sijaitsee "pointer" muistipaikkaan, missä itse arvo sijaitsee. Koska rdx oli outo string numeroita, Pelkkä rdx (tai rdx indeksillä 0) tarkoittaa siis ensimmäistä tavua, "0x03" tai vain 03. 
+
+Sen jälkeen tuleva "add (%rsi,%rax,1),%cl" tarkoittaa, että lisätään cl-rekisterin osoittamaan paikkaan rsi:n osoittama arvo. Tässä tapauksessa, koska "indeksi" (rax,1) on edelleen 0, tarkoittaa rsi:n ensimmäistä tavua, kirjainta "p". Tämä muutetaan on ASCII numeroarvo. Cl ei nyt kuitenkaan sisällä 70, vaan 73, koska %cl sattuu olemaan %ecx:n lopputavuja. 
+
+Sitten tuleva "cmp %cl,(%rdi,%rax,1)" tekee käytännössä 73 == %rdi indeksillä 0, eli 73 == %rdi :n ensimmäinen tavu. Aikaisemmin laitoin, että meidän salasana oon rbx, mutta nyt uudelleen katsomalla, rbx sisältää pointterin "salasana" stringiin. Rivi siis vertaa "73" ja "s", eli 73. Koska ne ovat samoja, seuraavaa "jne" ei käynnistetä. Jos kirjaimet eivät ole samat, esim. 73 == 70 eli epätosi, koodi hyppää kohtaan "mov 0x0,%eax", "ret", eli palauttaa 0, huono tulos. Tässä funktion ainoa epäonnistumisen kohta. 
+
+"cmpb   $0x0,0x1(%rsi,%rax,1)" tarkoittaa, että verrataan "0x0" eli 0 ja %rsi indeksillä +1, eli RSI + 1 (aikaisemmin oli RSI + 0). Seuraava "je" tarkoittaa jump if equal, eli hyppää kohtaan "mov 0x1,eax" "ret". Eli jos viimeinen merkki on 0, palauta 1, eli hyvä tulos. Tämä on siksi, että string loppuu päätösmerkkiin "0\" joka on 0. Jos ehto ei täyty, jatkamme:
+
+"add 0x1,%eax" eli lisää eax/rax +1. Tämä on siis indeksin korotus, koodissa esim. "i++". 
+
+Sen jälkeen verrataan taas 0 ja rdi + indeksi. Jos tämä on tosi (tulos 0), palauttaa ohjelma 1, eli hyvä tulos. Muuten, aloitetaan ohjelma uudelta loopilta.
+
+### No miten se salasana nyt saadaan siis selville?
+
+Yksinkertaisesti, voidaan lisätä jokaiseen RSI kirjaimeen saman indeksin RDX (rsi on "password", RDX on "0x03 0x05 0x02 0x04 0x01 0x00 0x03 0x01". Esim. rsi[0] + rdx[0] => 70 + 3 = 73 = "s". rsi[1] + rdx[1] => "a" -> 97 + 5 = 102 = "f"... == **sfuwxoue**. 
+
+<img width="611" height="37" alt="image" src="https://github.com/user-attachments/assets/c9f7f303-b2dc-4482-ad2d-1925d665397a" />
 
 
 ## Lähteet
