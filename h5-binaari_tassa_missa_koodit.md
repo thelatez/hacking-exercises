@@ -126,15 +126,38 @@ Breakpointtia ei juuri pystynyt laittamaan myöhempään vaiheeseen ohjelmaa, ko
 
 <img width="672" height="215" alt="image" src="https://github.com/user-attachments/assets/266e6a1f-1621-44ff-bdc6-f025c9553542" />
 
-Lyhyesti selitettynä: kun ohjelma "call" strlen-funktiota, se laskee stringin pituuden. Se tapahtuu kuvassa kahdesti. Niiden tulos tallenetaan "mov" avulla johonkin muuttujaan yms. Loppupäässä oleva "cmp" on compare eli vertaile. Se vertailee tulosten pituutta. Sen jälkeen tuleva "jne" (jump if not equal) tarkoittaa sitä, että koodi hyppää toiseen kohtaan, jos edellä oleva compare ei ollut equal, muuten toiminta jatkuu lineaarisesti. Jos salasana ei siis ole 8-merkkiä pitkä, ohjelma hyppää osoitteeseen "0x5555555552af <mAsdf3a+85>", joka sattuu olemaan aivan koodin loppupäässä, jossa käy jo "siivousoperaatiot", ja ihan hetken päästä myös ret (return), eli ohjelman lopetus. 
+Kun ohjelma kutsuu "call" strlen-funktiota, se laskee stringin pituuden. Se tapahtuu kuvassa kahdesti. Niiden tulos tallennetaan "mov" avulla johonkin muuttujaan yms. Loppupäässä oleva "cmp" on compare eli vertaile. Se vertailee tulosten pituutta. Sen jälkeen tuleva "jne" (jump if not equal) tarkoittaa sitä, että koodi hyppää toiseen kohtaan, jos edellä oleva compare ei ollut equal, muuten toiminta jatkuu lineaarisesti. Jos salasana ei siis ole 8-merkkiä pitkä, ohjelma hyppää osoitteeseen "0x5555555552af <mAsdf3a+85>". Tämä sattuu olemaan aivan koodin loppupäässä, jossa käy jo "siivousoperaatiot", ja ihan hetken päästä myös ret (return), eli ohjelman lopetus.
 
-Nyt tiedetään, että seuraava breakpoint kannattaa laittaa vertailun jälkeen, ja syötteeksi antaa 8 merkkiä pitkä salasana. Annetaan salasanaksi vaikkapa salasana, ja breakpointiksi muistiosoite "0x555555555281", joka on heti "jle" -ohjeen jälkeen. Teen tämän kokonaan uudessa gdb-instanssissa, eli quit -> gdb passtr2o.
+Nyt tiedetään, että seuraava breakpoint kannattaa laittaa vertailun jälkeen, ja syötteeksi antaa 8 merkkiä pitkä salasana. Annetaan salasanaksi vaikkapa salasana, ja breakpointiksi muistiosoite "0x555555555281", joka on heti "jle" -ohjeen jälkeen. Teen tämän kokonaan uudessa gdb-instanssissa jotta poistuu aikaisempi breakpoint ja kesken jäävä ohjelma saadaan nopeasti suljettua. Tehdään siis: quit -> gdb passtr2o.
 
     break *0x555555555281
     run
     salasana
 
 Nyt rekisterit ovat muuttuneet hieman, esimerkiksi "salasana" löytyy rekistereistä rbx ja rdi, ja ohjelman teksti rekisteristä rbp. Katsotaan taas ohjelmakoodia, "x/30i $pc".
+
+<img width="674" height="610" alt="image" src="https://github.com/user-attachments/assets/2221372b-769b-4172-9543-52be4992734a" />
+
+Tässä vaiheessa selkeyttäisi, jos rekisterit ja niiden sisältö on kirjattuna ylös:
+* %rbp = "anLTj4u8"
+* %rbx = "salasana"
+* %rax = indeksi (esim. jokutaulukko[indeksi], hakee siis kirjaintaulukosta (stringistä) tietyn kirjaimen indeksin kohdalla).
+* %ecx = "salasana" -stringin kirjain kohdassa indeksi
+* %edx = "anLTj4u8" -stringin kirjain kohdassa indeksi
+
+Rivi "0x555555555290 <mAsdf3a+54>:	test   $0x1,%al" tarkoittaa: "Onko indeksi tällä hetkellä parillinen/pariton?" ja sen pohjalta tehdään päätös "je":n avulla: jos parillinen, lisätään kirjaimen arvoon 3 (0x555555555299 <mAsdf3a+63>:	add    $0x3,%edx), jos pariton, vähennetään sen sijaan 7 (0x555555555294 <mAsdf3a+58>:	sub    $0x7,%edx). Oletan siis, että tämä on loop, joka käy koko kirjainketjun rekisterissä edx ("anLTj4u8"), läpi ja nostaa tai laskee kirjainten ASCII-arvoa ehdon mukaan. Lopussa oleva cmp vertaa %ecx (syöttämämme salasanaa) ja uutta %edx (muokattu "anLTj4u8").
+
+
+Seuraavalla komennolla saa kirjaimet ja niiden ASCII luvut %rbp:stä:
+
+    x/8cb $rbp
+
+Lisäämme siis parillisiin 3, vähennämme parittomista 7. Esim. siis "a" on 97, jolloin siitä tulee 10, "n" on 110, jolloin siitä tulee 103 jne. Salasana on siis **dgOMm-x1**, Lippu: **FLAG{Lari-rsvRDx04WMBZpuwg4qfYwzdcvVa0oym}**
+
+<img width="690" height="86" alt="image" src="https://github.com/user-attachments/assets/ff4a1f9b-ba65-4894-b7b0-5633f3f4e44f" />
+
+
+
     
 ## Lähteet
 * Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
