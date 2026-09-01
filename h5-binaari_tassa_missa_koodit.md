@@ -91,10 +91,15 @@ Kansiossa on seuraavat tiedostot: Makefile (jolla voi kääntää ohjelman passt
 
 Tehtävässä halutaan, että ohjelmasta **passtr2o** löydetään salasana, ja mitä luultavasti oikean salasanan syöttäessä printattu lippu (flag). Aloitin ihan ensiksi tutustumalla passtr -ohjelmaan, suorittamalla sen (./passtr). Tästä ohjelmasta meillä on kuitenkin myös lähdekoodi, joten en pyöri sen parissa kauaa. Passtr -ohjelman salasanan saikin helposti saataville, muun muassa komennolla "strings passtr", tai katsomalla suoraan lähdekoodista. 
 
-Seuraavaksi tietenkin piti myös kokeilla passtr -ohjelman salasanaa passtr2o tehtävään, mutta tehtävä ei ole sentään niin helppo. Koska passtr2o:sta ei ole lähdekoodia, katsoin myös sen sisällön strings-komennolla. Sieltäkään ei kuitenkaan saanut enää salasanaa, vain sen, että "What's the password?" rivin jälkeen tuli jälleen "%19s" (kuten passtr) ohjelmassa. Tämä kertoo siis, että jokin muuttuja on määritelty olemaan korkeintaan 19 merkkiä pitkä oleva string. Salasana on siis luultavasti korkeintaan 20 merkkiä päätösmerkin (\0) kanssa.
+Seuraavaksi tietenkin piti myös kokeilla passtr -ohjelman salasanaa passtr2o tehtävään, mutta tehtävä ei ole sentään niin helppo. Koska passtr2o:sta ei ole lähdekoodia, katsoin myös sen sisällön strings-komennolla. Sieltäkään ei kuitenkaan saanut enää salasanaa, vain sen, että "What's the password?" rivin jälkeen tuli jälleen "%19s" (kuten passtr) ohjelmassa. Tämä kertoo siis, että jokin muuttuja on määritelty olemaan korkeintaan 19 merkkiä pitkä oleva string. Salasana on siis luultavasti korkeintaan 20 merkkiä päätösmerkin (\0) kanssa. Lisäksi strings-komennon avulla selvisi, että ohjelma sisältää "check_password" funktion. Tämä funktio on luultavasti se funktio, joka vertaa syötettä salasanaan.
 
-GDB:lläkään ei salasanaa löydä niin helposti, koska lähdekoodin puuttuminen rajoittaa debuggerin toimintoja huomattavasti. 
+GDB:lläkään ei salasanaa löydä niin helposti, koska lähdekoodin puuttuminen rajoittaa debuggerin toimintoja huomattavasti. Muun muassa breakpointteja ja watchpointteja ei saa juurikaan laitettua paitsi tunnettuihin funktioihin, joita yleensä on vain main, nyt myös check_password. Jotta ohjelmaa voi siis tutkia esim. disassemblerilla, pitää ohjelman olla käynnissä. Tehdään siis seuraavat asiat, kun ohjelma on avattu komennolla "gdb passtr2o"
 
+    break main
+    run
+    disassemble
+
+(huom. en laita breakpointtia funktiolle "check_password", koska alkukokeiluiden yhteydessä se ei toiminut). Nyt meillä on ohjelmasta Assembly-ohjeita. Tästä on kuitenkin vielä aika vaikea löytää mikä riveistä edes saattaisi sisältää etsimämme salasanan, saatika sitten miten sen saa annetulla informaatiolla selville.
 
 ## Lähteet
 * Lab1: https://en.wikipedia.org/wiki/Register_(keyword) (mikä on register-avainsana)
