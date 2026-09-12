@@ -6,16 +6,25 @@
 
 ## Vastaus
 
-Tehtävän aloittamista varten pitää ladata Tapo C200:n laiteohjelmisto. Sen saa ladattua vapaasti myös internetistä, mutta tässä tapauksessa käytän opettajan jakamaa laiteohjelmistoa. Kyseessä on "Tapo C200" kameran v3-laiteohjelmisto. Huomiona se, että uudempia versioita löytyy, mm. v5, mutta tässä tehtävässä ei ole tarkoitus aiheuttaa oikeita ongelmia, jolloin tutkimme tiedetysti viallista versiota v3. Lisäksi pitää ladata myös "tp-link-decrypt" github-repositorio, jossa on työkalu jolla kaivaa laitteesta avaimet. Suorittaminen kannattaa tehdä linux-ympäristössä, mieluusti "Debian", "Ubuntu" tai "Kali" distribuutiolla. 
-
-Lataukset selkeämmin:
-* Tapo C200-laiteohjelmisto. Mennään tiedostonimellä "dump-tapo-c200v3-1.4.2.bin"
-* tp-link-decrypt -repositorion työkalu. Saatavilla: https://github.com/robbins/tp-link-decrypt.
-
 ### Vaiheet:
 
-Tehdään kansio "tapo" ja siirrytään sen sisään. Siirretään C200:n laiteohjelmisto kansion sisään.
-Kloonataan tp-link-decrypt kansioon, ja siirrytään sen sisään:
+Lataukset:
+* Tapo C200-laiteohjelmisto. Mennään tiedostonimellä "Tapo-C200v3_en_1.4.2.bin"
+* Kameran dump-tiedosto. Mennään tiedostonimellä "dump-tapo-c200v3-1.4.2.bin"
+* tp-link-decrypt -repositorion työkalu. Saatavilla: https://github.com/robbins/tp-link-decrypt.
+
+Tehdään kansio "tapo" ja siirrytään sen sisään. 
+
+    mkdir tapo
+    cd tapo
+
+Ladataan C200:n laiteohjelmisto:
+
+    aws s3 cp s3://download.tplinkcloud.com/firmware/Tapo_C200v3_en_1.4.2_Build_250313_Rel.40499n_up_boot-signed_1747894968535.bin Tapo_C200v4_en_1.4.2.bin --no-sign-request
+
+Huom. vaatii AWS CLI:n.
+    
+Siirretään C200:n kameradump kansion tapo sisään (löytyy moodlesta), ja kloonataan tp-link-decrypt kansioon, ja siirrytään sen sisään:
 
     git clone https://github.com/robbins/tp-link-decrypt
     cd tp-link-decrypt
@@ -30,18 +39,19 @@ Kun preinstall on tehty, suoritetaan:
 
     ./extract_keys.sh
 
-Kun ohjelma kysyy: "[INFO] Do you want to run binwalk in quiet mode? [yes/no]": kirjoita "no". Onnistumisen jälkeen suoritetaan
+Kun ohjelma kysyy: "[INFO] Do you want to run binwalk in quiet mode? [yes/no]": kirjoita "no". Onnistumisen jälkeen suoritetaan:
 
     make
 
-Ja sen jälkeen decryptauksen voi viimeistellä:
+Jos tämä onnistui, nyt kansiossa bin tulisi olla "tp-link-decrypt" -tiedosto. Sillä voi nyt decryptata C200:n firmwaren:
 
     cd ..
-    tp-link-decrypt/bin/tp-link-decrypt dump-tapo-c200v3-1.4.2.bin
+    tp-link-decrypt/bin/tp-link-decrypt Tapo_C200v3_en_1.4.2.bin
 
-Jos kaikki tapahtui onnistuneesti, sinulla pitäisi nyt olla tiedosto "dump-tapo-c200v3-1.4.2.bin.dec".
+Jos kaikki tapahtui onnistuneesti, sinulla pitäisi nyt olla tiedosto "Tapo_C200v3_en_1.4.2.bin.dec".
 
-<img width="764" height="39" alt="Proof of success" src="https://github.com/user-attachments/assets/bfdb26db-300a-44ac-87d4-77aed7e04739" />
+<img width="568" height="63" alt="Proof of success" src="https://github.com/user-attachments/assets/4240ad2a-57df-4caf-9189-3539c55aeb9f" />
+
 
 
 
