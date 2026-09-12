@@ -6,11 +6,9 @@
 
 ## Vastaus
 
-### Vaiheet:
-
-Lataukset:
+### Lataukset:
 * Tapo C200-laiteohjelmisto. Mennään tiedostonimellä "Tapo-C200v3_en_1.4.2.bin"
-* Kameran dump-tiedosto. Mennään tiedostonimellä "dump-tapo-c200v3-1.4.2.bin"
+* Kameran dump-tiedosto. Mennään tiedostonimellä "dump-tapo-c200v3-1.4.2.bin". <sub>(En tarjoa tälle mitään julkista latausmetodia, koska en tiedä onko se sallittua).</sub>
 * tp-link-decrypt -repositorion työkalu. Saatavilla: https://github.com/robbins/tp-link-decrypt.
 
 Tehdään kansio "tapo" ja siirrytään sen sisään. 
