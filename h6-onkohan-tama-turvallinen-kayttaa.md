@@ -41,6 +41,9 @@ Ja sen jälkeen decryptauksen voi viimeistellä:
 
 Jos kaikki tapahtui onnistuneesti, sinulla pitäisi nyt olla tiedosto "dump-tapo-c200v3-1.4.2.bin.dec".
 
+<img width="764" height="39" alt="Proof of success" src="https://github.com/user-attachments/assets/bfdb26db-300a-44ac-87d4-77aed7e04739" />
+
+
 
 ## Lähteet
 * Kurssin moodle sivu, "Sovellusten hakkerointi ja haavoittuvuudet - ICI012AS3A-3004 - 2026p1 - Tero ja Lari - to 14:00", välilehti "Hardware hacking". 
