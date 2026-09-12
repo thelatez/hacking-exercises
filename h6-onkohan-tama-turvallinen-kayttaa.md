@@ -6,7 +6,7 @@
 
 ## Vastaus
 
-### Lataukset:
+### Lataukset/valmistelu:
 * Tapo C200-laiteohjelmisto. Mennään tiedostonimellä "Tapo-C200v3_en_1.4.2.bin"
 * Kameran dump-tiedosto. Mennään tiedostonimellä "dump-tapo-c200v3-1.4.2.bin". <sub>(En tarjoa tälle mitään julkista latausmetodia, koska en tiedä onko se sallittua).</sub>
 * tp-link-decrypt -repositorion työkalu. Saatavilla: https://github.com/robbins/tp-link-decrypt.
@@ -41,16 +41,59 @@ Kun ohjelma kysyy: "[INFO] Do you want to run binwalk in quiet mode? [yes/no]": 
 
     make
 
-Jos tämä onnistui, nyt kansiossa bin tulisi olla "tp-link-decrypt" -tiedosto. Sillä voi nyt decryptata C200:n firmwaren:
+Jos tämä onnistui, nyt kansiossa bin tulisi olla "tp-link-decrypt" -tiedosto. Sillä voi nyt decryptata C200:n firmwaren.
+
+### 1. Decrypt firmware image
 
     cd ..
     tp-link-decrypt/bin/tp-link-decrypt Tapo_C200v3_en_1.4.2.bin
 
-Jos kaikki tapahtui onnistuneesti, sinulla pitäisi nyt olla tiedosto "Tapo_C200v3_en_1.4.2.bin.dec".
+Jos decryptaus tapahtui onnistuneesti, sinulla pitäisi nyt olla tiedosto "Tapo_C200v3_en_1.4.2.bin.dec".
 
 <img width="568" height="63" alt="Proof of success" src="https://github.com/user-attachments/assets/4240ad2a-57df-4caf-9189-3539c55aeb9f" />
 
+### 2. Analyse the image file
 
+Tehdään analysointi binwalkilla.
+
+    binwalk Tapo_C200v3_en_1.4.2.bin.dec
+
+<img width="1084" height="402" alt="First part of binwalk command result" src="https://github.com/user-attachments/assets/de3a5d28-9e17-4977-9ebc-3d3aeb6d2a1b" />
+
+<img width="1083" height="174" alt="Ending of binwalk command result" src="https://github.com/user-attachments/assets/6358b2f9-08fe-467e-9c4f-b9192dc0f3fc" />
+<sub>Huom. välistä jätetty rivejä kompressoitua xz-dataa.</sub> 
+
+Käyn läpi vain tärkeimmät huomiot: 
+* "Android bootimg" sisältää 0 tavua kokoisen kernelin, ja massiivisen ramdisk-koon. Tämä on mitä luultavammin false positive.
+* "uImage header" on tunnetusti yhdistetty U-Boot:iin, joka joka on yleinen sulautettujen järjestelmien bootloader. Erityisesti kertoo:
+  * CPU:n arkkitehtuuri on MIPS vs. esim. ARM, yleinen nykypäivän puhelinten ja sulautettujen järjestelmien arkkitehtuuri
+  * Image type kertoo tämän olevan kernel image.
+  * Image name kertoo, että valmistaja on "Ingenic", linux kernel versiolla 3.10.14.
+  * Image size kertoo kernelin olevan kompressoituna noin 1.3 MB.
+* "JBOOT STAG header" väittää kokonsa olevan noin 1.8 GB. Tämä ei ole mahdollista, joten luultavasti toinen false positive.
+* "Squashfs filesystem" on kompressoitu, erittäin tunnettu read-only käyttöjärjestelmä Linux-pohjaisissa sulautetuissa järjestelmissä. Järjestelmä käyttää xz-kompressiota. Kokona noin 3 MB kompressoituna.
+
+Lähes varmaa on siis se, että etsimämme asiat (esim. salasanat) löytyvät, jos Squashfs:n extractaa. 
+
+### 3. Extract rootfs from the dump file
+
+Nyt kyse on dump-tiedostosta, eli opettajan antamasta kameran dumpista (dump-tapo-c200v3-1.4.2.bin). Tämä järjestelmä toimii myös squashfs:llä, jonka voi myös tarkistaa suorittaen "binwalk <tiedostonnimi>". Siirryn nyt ohjeissa kuitenkin suoraan extractaamiseen:
+
+    binwalk -e dump-tapo-c200v3-1.4.2.bin
+
+Tämä luo kansion "_dump-tapo-c200v3-1.4.2.bin.extracted".
+
+### 4. Extract rootfs from the image file
+
+Samalla tavalla kuin dump filen extract:
+
+    binwalk -e Tapo_C200v3_en_1.4.2.bin.dec 
+
+Tämä luo kansion "_Tapo_C200v3_en_1.4.2.bin.dec.extracted".
+
+### 5. Search available applications
+
+Aloitetaan firmwaren versiosta, kohdasta 4. 
 
 
 ## Lähteet
