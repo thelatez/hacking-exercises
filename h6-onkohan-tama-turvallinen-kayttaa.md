@@ -235,14 +235,15 @@ Tämän tulos on "match", eli rootin salasana on **slpingenic**.
 
 ### Mitä haavoittuvuuksia ja miten ne voi löytää?
 
-Aloitetaan selkeimmällä ongelmalla; 
+Aloitetaan selkeimmällä ongelmalla:
+
 root salasana
-**Ongelmat:** Salasana on staattinen, toistuva hash monessa laitteessa. Kryptograafisesti "kestävä", mutta ei siltikään turvallinen (10 merkkiä pitkä, kaikki pieniä kirjaimia, ei numeroita/erikoismerkkejä). Salasana on tallennettu yksinkertaisesti "passwd" tiedostoon, joka on "legacy" tapa. Uudempi tapa "shadow":n sisään tallentamisellekin olisi mahdollinen ja osittain toteutettu, mutta ei kuitenkaan. 
-**Miten korjata:** Salasana saisi olla vähintäänkin dynaaminen, eli ei toistu useassa laitteessa. Salasana voisi pohjatua esimerkiksi uniikkiin laitetunnukseen. Tallentaminen pitäisi tehdä huoleellisemmin, ei vain tunnetussa hakemistossa esillä.
+* **Ongelmat:** Salasana on staattinen, toistuva hash monessa laitteessa. Kryptograafisesti "kestävä", mutta ei siltikään turvallinen (10 merkkiä pitkä, kaikki pieniä kirjaimia, ei numeroita/erikoismerkkejä). Salasana on tallennettu yksinkertaisesti "passwd" tiedostoon, joka on "legacy" tapa. Uudempi tapa "shadow":n sisään tallentamisellekin olisi mahdollinen ja osittain toteutettu, mutta ei kuitenkaan. 
+* **Miten korjata:** Salasana saisi olla vähintäänkin dynaaminen, eli ei toistu useassa laitteessa. Salasana voisi pohjatua esimerkiksi uniikkiin laitetunnukseen. Tallentaminen pitäisi tehdä huoleellisemmin, ei vain tunnetussa hakemistossa esillä.
 
 Verkkoyhteydet
-**Ongelmat:** Kaikki yhteydet (HTTP/RTSP/...) hoitaa squashfs-root/bin/main -tiedosto, root oikeuksilla. Koska kaikki hoidetaan rootilla, pääsy millä tahansa yhteydellä järjestelmään tarkoittaa sitä, että oikeudet ovat suoraan root, eikä esim. user josta pitäisi saada "eskaloitua" oikeuksia ylöspäin. 
-**Miten korjata:** Koska tiedostoissa jo mainitaan "admin", "user" yms, pitäisi toimintoja suorittaa minimioikeuksilla, eikä aina root-tason skripteillä. 
+* **Ongelmat:** Kaikki yhteydet (HTTP/RTSP/...) hoitaa squashfs-root/bin/main -tiedosto, root oikeuksilla. Koska kaikki hoidetaan rootilla, pääsy millä tahansa yhteydellä järjestelmään tarkoittaa sitä, että oikeudet ovat suoraan root, eikä esim. user josta pitäisi saada "eskaloitua" oikeuksia ylöspäin. 
+* **Miten korjata:** Koska tiedostoissa jo mainitaan "admin", "user" yms, pitäisi toimintoja suorittaa minimioikeuksilla, eikä aina root-tason skripteillä. 
 
 
 ### Fiilikset tehtävästä
