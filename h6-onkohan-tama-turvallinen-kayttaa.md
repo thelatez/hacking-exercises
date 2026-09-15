@@ -1,6 +1,16 @@
 # h6 - Onkohan tämä turvallinen käyttää? 
 
 ### Tehtävänanto
+
+Tehtävänanto tunnilta:
+1. Decrypt the firmware image            // Decryptaa firmware (laiteohjelmisto)
+2. Analyse the image file                // Analysoi laiteohjelmistoa
+3. extract rootfs from the dump file     // Extractaa rootfs kameran dump-tiedostosta
+4. extract rootfs from the image file    // Extractaa rootfs laiteohjelmistosta
+5. search available applications         // Etsi saatavilla olevia sovelluksia
+6. analyse and try to open root password // Analysoi ja yritä avata rootin salasana
+
+Lisäksi:
 * Tutki Tapo C200-kameran ohjelmiston turvallisuutta
 * Kirjoita raportti siitä, miten ja mitä haavoittuvuuksia löysit. Voiko haavoittuvuuksia käyttää hyödyksi?
 
@@ -172,6 +182,8 @@ Tästä pitäisi tulostua kutakuinkin "exact filesystem size: 2132764 0x208b1c".
 
 Nyt sinulla pitäisi olla oikea squashfs -tiedostojärjestelmä, "real_squashfs-root", josta löytyy esimerkiksi passwd, eli rootin salasana.
 
+<img width="493" height="64" alt="Real_squashfs-root folder contents" src="https://github.com/user-attachments/assets/caa3be10-ac09-4ecc-a23d-6a51af6e66a8" />
+
 
 ### 4. Extract rootfs from the image file
 
@@ -194,7 +206,27 @@ Aloitetaan firmwaren versiosta, kohdasta 4.
 
 ### 6. Finding the root password
 
-Aloitetaan tiedostolla "Tapo_C200v3_en_1.4.2.bin.dec". Tämä on siis se decryptattu firmware-tiedosto, ei kohdassa 4 extractattu.
+Tiedämme jo, että dumpista kaivettu Squashfs sisältää nyt kaiken. Siirrytään siis tapo-kansion juuresta yleiseen salasanojen tallennuspaikkaan, "etc".
+
+    cd real_squashfs-root/etc/ && ls
+
+Näemme, että kansio sisältää tunnettuja sijanteja, "shadow" ja "passwd". Katsotaan niiden sisälle:
+
+    more passwd && more shadow
+
+Poikkeuksellisesti, rootin salasana löytyy "passwd" tiedostosta, joka on "vanha" tapa. Nyt meillä on käsissämme rootin hash: "$1$ciCib83f$p1yofmGYSQxu8OI2M8/Mz.". Alun "$1$" tarkoittaa MD5-crypt:iä, "ciCib83f" on sen 'suola', ja loput "p1yofmGYSQxu8OI2M8/Mz." on itse hash. Hashin voisi saada selville esimerkiksi hashcat -bruteforce-hyökkäyksellä, muttak koska se vie valtavasti aikaa ja hyötyy GPU:sta, joten ratkaistaan se tällä kertaa hieman "huijaamalla".
+
+Verkosta löytyy tietoa, että "Realtek"-pohjaisella Tapo-laitteella, rootin vakiosalasana on ollut "slprealtek" (https://github.com/nervous-inhuman/tplink-tapo-c200-re). Tämä koostuu reportoidusta rootin shell promptista "root@SLP" + Realtek pohjainen infrastruktuuri. Koska meillä on "Ingenic" pohjainen prosessorin infastruktuuri, voi olla pääteltävissä, että salasana olla "slpingenic". Selvitetään se python-skriptillä:
+
+    python3 -c "
+    import subprocess
+    target = '\$1\$ciCib83f\$p1yofmGYSQxu8OI2M8/Mz.'
+    result = subprocess.run(['openssl','passwd','-1','-salt','ciCib83f','slpingenic'],
+                             capture_output=True, text=True).stdout.strip()
+    print('match' if result == target else 'no match')
+    "
+
+Tämän tulos on "match", eli rootin salasana on **slpingenic**. 
 
 ## Lähteet
 * Kurssin moodle sivu, "Sovellusten hakkerointi ja haavoittuvuudet - ICI012AS3A-3004 - 2026p1 - Tero ja Lari - to 14:00", välilehti "Hardware hacking". 
@@ -203,3 +235,4 @@ Aloitetaan tiedostolla "Tapo_C200v3_en_1.4.2.bin.dec". Tämä on siis se decrypt
 * https://quentinkaiser.be/security/2025/07/25/rooting-tapo-c200/ (toinen esimerkki siitä, miten esimerkiksi root-salasanan voi saada selville)
 * ilmainen OpenAI:n ChatGPT -laaja kielimalli. Käytetty 12.-14.9.2026. Saatavilla: chatgpt.com
 * ilmainen Anthropic:n Claude Sonnet 5 -laaja kielimalli, effort tasoilla Medium ja High. Käytetty 14.-15.9.2026. Saatavilla: https://claude.ai/new
+* https://github.com/nervous-inhuman/tplink-tapo-c200-re (toinen root salasana)
