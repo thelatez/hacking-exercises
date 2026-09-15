@@ -193,10 +193,9 @@ HUOM! Tässä on ohje jos vaihetta 3 ei tehnyt. Siinä extractattiin jo firmware
 
     binwalk -e Tapo_C200v3_en_1.4.2.bin.dec
 
-Jos osion 3 oli jo tehnyt tai äsköisen, seuraavaksi:
+Jos osion 3 oli jo tehnyt tai edellisen ohjeen, seuraavaksi:
 
-    cd _Tapo_C200v3_en_1.4.2.bin.dec.extracted/
-    cd squashfs-root/
+    cd _Tapo_C200v3_en_1.4.2.bin.dec.extracted/squashfs-root/
 
 Nyt käsissä on myös yksinkertainen, ei täydellinen squashfs käyttöjärjestelmä. Täältä puuttuu paljon olennaisia osia, kuten root salasana ja paljon oikeita toimintoja. Tämäkin kansio kuitenkin sisältää tietoa.
 
@@ -214,9 +213,11 @@ Näemme, että kansio sisältää tunnettuja sijanteja, "shadow" ja "passwd". Ka
 
     more passwd && more shadow
 
-Poikkeuksellisesti, rootin salasana löytyy "passwd" tiedostosta, joka on "vanha" tapa. Nyt meillä on käsissämme rootin hash: "$1$ciCib83f$p1yofmGYSQxu8OI2M8/Mz.". Alun "$1$" tarkoittaa MD5-crypt:iä, "ciCib83f" on sen 'suola', ja loput "p1yofmGYSQxu8OI2M8/Mz." on itse hash. Hashin voisi saada selville esimerkiksi hashcat -bruteforce-hyökkäyksellä, muttak koska se vie valtavasti aikaa ja hyötyy GPU:sta, joten ratkaistaan se tällä kertaa hieman "huijaamalla".
+Poikkeuksellisesti, rootin salasana löytyy "passwd" tiedostosta, joka on "vanha" tapa. Nyt meillä on käsissämme rootin hash: "$1$ciCib83f$p1yofmGYSQxu8OI2M8/Mz.". Alun "$1$" tarkoittaa MD5-crypt:iä, "ciCib83f" on sen 'suola', ja loput "p1yofmGYSQxu8OI2M8/Mz." on itse hash. 
 
-Verkosta löytyy tietoa, että "Realtek"-pohjaisella Tapo-laitteella, rootin vakiosalasana on ollut "slprealtek" (https://github.com/nervous-inhuman/tplink-tapo-c200-re). Tämä koostuu reportoidusta rootin shell promptista "root@SLP" + Realtek pohjainen infrastruktuuri. Koska meillä on "Ingenic" pohjainen prosessorin infastruktuuri, voi olla pääteltävissä, että salasana olla "slpingenic". Selvitetään se python-skriptillä:
+Hashin voisi saada selville esimerkiksi hashcat -bruteforce-hyökkäyksellä, mutta se vie valtavasti aikaa ja käytännössä vaatii GPU:n, joten ratkaistaan se tällä kertaa hieman "huijaamalla".
+
+Verkosta löytyy tietoa, että "Realtek"-pohjaisella Tapo-laitteella, rootin vakiosalasana on ollut "slprealtek" (https://github.com/nervous-inhuman/tplink-tapo-c200-re). Tämä koostuu raportoidusta rootin shell promptista "root@SLP" + Realtek pohjainen infrastruktuuri. Koska meillä on "Ingenic" pohjainen prosessorin infastruktuuri, voi olla pääteltävissä, että salasana olisi "slpingenic". Selvitetään se python-skriptillä:
 
     python3 -c "
     import subprocess
