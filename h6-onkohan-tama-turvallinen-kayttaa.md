@@ -88,13 +88,13 @@ Lähes varmaa on siis se, että etsimämme asiat (esim. salasanat) löytyvät, j
 
 ### 3. Extract rootfs from the dump file
 
-Nyt kyse on dump-tiedostosta, eli opettajan antamasta kameran dumpista (dump-tapo-c200v3-1.4.2.bin). Tämä järjestelmä toimii myös squashfs:llä, jonka voi myös tarkistaa suorittaen "binwalk <tiedostonnimi>". Helpoin tapa extractaa olisi tehdä "binwalk -e dump-tapo-c200v3-1.4.2.bin", mutta tällä ei valitettavasti tule haluttua tulosta. Koska binwalk ei suoraan löydä oikeaa muistialuetta kokonaan, pitää se löytää manuaalisesti. Key pitää löytää itse, sen saa selville esim. firmwaresta. Aloitetaan keyn löytämisellä.
+Nyt kyse on dump-tiedostosta, eli opettajan antamasta kameran dumpista (dump-tapo-c200v3-1.4.2.bin). Tämä järjestelmä toimii myös squashfs:llä, jonka voi myös tarkistaa suorittaen "binwalk (tiedostonnimi)". Helpoin tapa extractaa olisi tehdä "binwalk -e dump-tapo-c200v3-1.4.2.bin", mutta tällä ei valitettavasti tule haluttua tulosta. Koska binwalk ei suoraan löydä oikeaa muistialuetta kokonaan, pitää se löytää manuaalisesti. Myös key pitää löytää itse. Key voidaan saada selville esim. firmwaresta. Aloitetaan keyn löytämisellä.
 
 Muistellaan ensin kernelin sijainti aikaisemmin tehdystä "binwalk Tapo_C200v3_en_1.4.2.bin.dec"-komennosta. Alla sama kuva uusiksi:
 
 <img width="1084" height="402" alt="First part of binwalk command result" src="https://github.com/user-attachments/assets/de3a5d28-9e17-4977-9ebc-3d3aeb6d2a1b" />
 
-Kuvasta näkee, että "uImage header" (kernel) on 64 tavua, ja se on kompressoitu "lzma":lla. UImagen jälkeen tulee lzma kompressoitu alue, joka on luultavimmin se, missä kernelin data sijaitsee. 
+Kuvasta näkee, että "uImage header" (kernel) on 64 tavua, ja se on kompressoitu "lzma":lla. UImagen jälkeen tulee lzma kompressoitu alue, joka on oletettavasti se alue, missä kernelin data sijaitsee. 
 
 Extractataan decryptattu firmware (tämä on myös tehtävä 4):
 
@@ -112,11 +112,11 @@ Seuraavaksi yritämme purkaa kernelin ulos:
     "
     file kernel.bin
 
-Nyt kansiossa pitäisi myös olla tiedosto "kernel.bin". Yritämme etsiä kernelistä avaimen, ja toisten ihmisten aikaisempien tutkimusten perusteella avain alkaa yleensä "TP-LINK", jolloin etsitään alkuun vastaavanlaista sisältöä:
+Nyt kansiossa pitäisi myös tiedosto "kernel.bin". Yritämme etsiä kernelistä avaimen, ja toisten ihmisten aikaisempien tutkimusten perusteella avaimen voi löytää etsimällä "TP-LINK" kernelistä. Etsitään kernelistä "^TP_LINK":
 
     strings -n 8 kernel.bin | grep "^TP_LINK"
 
-Tämä palauttaa minulle avaimen plaintekstinä: "TP_LINK88i667gnt". Jotta avain saadaan käytettävään muotoon, tehdään komento:
+Tämä palauttaa minulle avaimen pelkkänä tekstinä: "TP_LINK88i667gnt". Jotta avain saadaan käytettävään muotoon, tehdään komento:
 
     echo -n "TP_LINK88i667gnt" | xxd -p | tr -d '\n'; echo
 
