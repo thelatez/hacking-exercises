@@ -201,7 +201,11 @@ Nyt käsissä on myös yksinkertainen, ei täydellinen squashfs käyttöjärjest
 
 ### 5. Search available applications
 
-Aloitetaan firmwaren versiosta, kohdasta 4. 
+| Tiedosto | Lähde | Vaaditut oikeudet |
+| --- | --- | --- |
+| main | squashfs_root (overlay) | root (muita oikeustasoja ei käytetä) |
+| hostapd | squashfs_root (overlay) | root |
+| init -skriptit | real_squashfs-root (OS) | root |
 
 ### 6. Finding the root password
 
@@ -228,6 +232,26 @@ Verkosta löytyy tietoa, että "Realtek"-pohjaisella Tapo-laitteella, rootin vak
     "
 
 Tämän tulos on "match", eli rootin salasana on **slpingenic**. 
+
+### Mitä haavoittuvuuksia ja miten ne voi löytää?
+
+Aloitetaan selkeimmällä ongelmalla; 
+root salasana
+**Ongelmat:** Salasana on staattinen, toistuva hash monessa laitteessa. Kryptograafisesti "kestävä", mutta ei siltikään turvallinen (10 merkkiä pitkä, kaikki pieniä kirjaimia, ei numeroita/erikoismerkkejä). Salasana on tallennettu yksinkertaisesti "passwd" tiedostoon, joka on "legacy" tapa. Uudempi tapa "shadow":n sisään tallentamisellekin olisi mahdollinen ja osittain toteutettu, mutta ei kuitenkaan. 
+**Miten korjata:** Salasana saisi olla vähintäänkin dynaaminen, eli ei toistu useassa laitteessa. Salasana voisi pohjatua esimerkiksi uniikkiin laitetunnukseen. Tallentaminen pitäisi tehdä huoleellisemmin, ei vain tunnetussa hakemistossa esillä.
+
+Verkkoyhteydet
+**Ongelmat:** Kaikki yhteydet (HTTP/RTSP/...) hoitaa squashfs-root/bin/main -tiedosto, root oikeuksilla. Koska kaikki hoidetaan rootilla, pääsy millä tahansa yhteydellä järjestelmään tarkoittaa sitä, että oikeudet ovat suoraan root, eikä esim. user josta pitäisi saada "eskaloitua" oikeuksia ylöspäin. 
+**Miten korjata:** Koska tiedostoissa jo mainitaan "admin", "user" yms, pitäisi toimintoja suorittaa minimioikeuksilla, eikä aina root-tason skripteillä. 
+
+
+### Fiilikset tehtävästä
+Loppuun valtava burn-out, siitä syystä esim. kohta 5 ja haavoittuvuusten kuvaus minimit. Työhön käytetty taas kivat osuudet päivistä la-ti, suuri osa hinkatessa edes takaisin tekoälyn kanssa, kun yritti saada roottia selville keinolla ja toisella. Pakko sanoa, että tehtävään ei varmaan ollut riittävää lähtötasoa, ja oppiminenkin jäi siitä syystä pienemmäksi kun mitä toivoisi. Ei ole muutenkaan mitään kokemusta, kaikenlaisista asioista, joista olisi ollut hyötyä esimerkiksi juurikin haavoittuvuusten löytämisessä (esim. se Ghidra, joka (jos ryhmiä olisi ollut vain yksi) olisi jo tutumpi). 
+
+Liitän kuvaksi lopputilanteen tapo-kansiosta jossa tehtävä + kokeilut tehtiin (osa kokeiluista poistettu jo aikaisemmin).
+
+<img width="1508" height="78" alt="image" src="https://github.com/user-attachments/assets/5307073b-ecd7-447f-b46f-0c67696906b6" />
+
 
 ## Lähteet
 * Kurssin moodle sivu, "Sovellusten hakkerointi ja haavoittuvuudet - ICI012AS3A-3004 - 2026p1 - Tero ja Lari - to 14:00", välilehti "Hardware hacking". 
