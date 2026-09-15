@@ -78,21 +78,15 @@ Lähes varmaa on siis se, että etsimämme asiat (esim. salasanat) löytyvät, j
 
 ### 3. Extract rootfs from the dump file
 
-Nyt kyse on dump-tiedostosta, eli opettajan antamasta kameran dumpista (dump-tapo-c200v3-1.4.2.bin). Tämä järjestelmä toimii myös squashfs:llä, jonka voi myös tarkistaa suorittaen "binwalk <tiedostonnimi>". Helpoin tapa extractaa olisi tehdä "binwalk -e dump-tapo-c200v3-1.4.2.bin", mutta tällä ei valitettavasti tule haluttua tulosta. Koska binwalk ei suoraan löydä oikeaa muistialuetta kokonaan, pitää se löytää manuaalisesti:
+Nyt kyse on dump-tiedostosta, eli opettajan antamasta kameran dumpista (dump-tapo-c200v3-1.4.2.bin). Tämä järjestelmä toimii myös squashfs:llä, jonka voi myös tarkistaa suorittaen "binwalk <tiedostonnimi>". Helpoin tapa extractaa olisi tehdä "binwalk -e dump-tapo-c200v3-1.4.2.bin", mutta tällä ei valitettavasti tule haluttua tulosta. Koska binwalk ei suoraan löydä oikeaa muistialuetta kokonaan, pitää se löytää manuaalisesti. Key pitää löytää itse, sen saa selville esim. firmwaresta. Aloitetaan keyn löytämisellä.
 
-    
-
-Tämä luo kansion "_dump-tapo-c200v3-1.4.2.bin.extracted".
-
-### 4. Extract rootfs from the image file
-
-Tämän voi extractata "helpommalla tavalla", koska meitä ei kiinnosta niin paljoa rakenne ja sen sisältö, vaan avain, joka sijaitsee kernelissä. Muistellaan ensin kernelin sijainti aikaisemmin tehdystä "binwalk Tapo_C200v3_en_1.4.2.bin.dec"-komennosta. Alla sama kuva uusiksi:
+Muistellaan ensin kernelin sijainti aikaisemmin tehdystä "binwalk Tapo_C200v3_en_1.4.2.bin.dec"-komennosta. Alla sama kuva uusiksi:
 
 <img width="1084" height="402" alt="First part of binwalk command result" src="https://github.com/user-attachments/assets/de3a5d28-9e17-4977-9ebc-3d3aeb6d2a1b" />
 
 Kuvasta näkee, että "uImage header" (kernel) on 64 tavua, ja se on kompressoitu "lzma":lla. UImagen jälkeen tulee lzma kompressoitu alue, joka on luultavimmin se, missä kernelin data sijaitsee. 
 
-Extractataan seuraavaksi decryptattu firmware:
+Extractataan decryptattu firmware (tämä on myös tehtävä 4):
 
     binwalk -e Tapo_C200v3_en_1.4.2.bin.dec 
     cd _Tapo_C200v3_en_1.4.2.bin.dec.extracted
@@ -120,8 +114,79 @@ Tästä palautuu "54505f4c494e4b383869363637676e74". Avaimen tulee olla 32-merkk
 * Key == 54505f4c494e4b383869363637676e74
 * IV  == 55aadeadc0de4c494e5558457854aa55
 
+Etsitään nyt oikea squashfs:
+
+    cat > scan.sh << 'EOF'
+    #!/bin/bash
+    FILE="dump-tapo-c200v3-1.4.2.bin"
+    KEY="54505f4c494e4b383869363637676e74"
+    IV="55aadeadc0de4c494e5558457854aa55"
+    STEP=256
+    START=$((0x1B0000))
+    END=$((0x200000))
+    
+    for ((offset=START; offset<END; offset+=STEP)); do
+      magic=$(dd if="$FILE" bs=1 skip=$offset count=512 status=none \
+        | openssl enc -aes-128-cfb1 -d -nosalt -nopad -K "$KEY" -iv "$IV" 2>/dev/null \
+        | head -c4 | xxd -p)
+      if [ "$magic" = "68737173" ]; then
+        printf "*** FOUND at offset 0x%X ***\n" "$offset"
+      fi
+    done
+    echo "scan done"
+    EOF
+    chmod +x scan.sh
+    ./scan.sh        
+
+Tästä pitäisi tulostua: "*** FOUND at offset 0x1C0000 ***". Nyt siis tiedämme että oikea squashfs -tiedostojärjestelmä alkaa osoitteesta 0x1C0000. Emme vielä tiedä sen loppua, joten teemme kokeiluksi ensin riittävän laajan alueen:
+
+    FILE="dump-tapo-c200v3-1.4.2.bin"
+    KEY="54505f4c494e4b383869363637676e74"
+    IV="55aadeadc0de4c494e5558457854aa55"
+    START=$((0x1C0000))
+    
+    dd if="$FILE" of=real_rootfs.bin bs=1 skip=$START count=3000000 status=progress
+    
+    dd if=real_rootfs.bin bs=512 count=1 | openssl enc -aes-128-cfb1 -d -nosalt -nopad \
+      -K "$KEY" -iv "$IV" | dd of=real_rootfs.bin bs=512 count=1 conv=notrunc
+    
+    file real_rootfs.bin
+
+Tästä pitäisi tulostua kutakuinkin: "real_rootfs.bin: Squashfs filesystem, little endian, version 4.0, xz compressed, 2132764 bytes, 457 inodes, blocksize: 65536 bytes, created: Thu Mar 13 03:15:03 2025". Jos tulos ei ole "Squashfs filesystem", jotain on väärin.
+
+Etsitään seuraavaksi oikea koko:
+
+    python3 -c "
+    import struct
+    with open('real_rootfs.bin','rb') as f:
+        data = f.read(48)
+    bytes_used = struct.unpack('<Q', data[40:48])[0]
+    print('exact filesystem size:', bytes_used, hex(bytes_used))
+    "    
+
+Tästä pitäisi tulostua kutakuinkin "exact filesystem size: 2132764 0x208b1c". Nyt siis tiedämme, että oikea koko on 2132764 bittiä, ja päätösosoite on 0x208b1c. Extractataan nyt oikea tiedostojärjestelmä:
+
+    truncate -s 2132764 real_rootfs.bin
+    rm -rf real_squashfs-root
+    unsquashfs -d real_squashfs-root real_rootfs.bin
+
+Nyt sinulla pitäisi olla oikea squashfs -tiedostojärjestelmä, "real_squashfs-root", josta löytyy esimerkiksi passwd, eli rootin salasana.
 
 
+### 4. Extract rootfs from the image file
+
+Tämän voi extractata "helpommalla tavalla", koska meillä on jo "kunnolla tehty" dump-tiedoston extractaus. Tätä voidaan myös käyttää vertailukohtana.
+
+HUOM! Tässä on ohje jos vaihetta 3 ei tehnyt. Siinä extractattiin jo firmware. Edellytyksenä kuitenkin vaihe 1.
+
+    binwalk -e Tapo_C200v3_en_1.4.2.bin.dec
+
+Jos osion 3 oli jo tehnyt tai äsköisen, seuraavaksi:
+
+    cd _Tapo_C200v3_en_1.4.2.bin.dec.extracted/
+    cd squashfs-root/
+
+Nyt käsissä on myös yksinkertainen, ei täydellinen squashfs käyttöjärjestelmä. Täältä puuttuu paljon olennaisia osia, kuten root salasana ja paljon oikeita toimintoja. Tämäkin kansio kuitenkin sisältää tietoa.
 
 ### 5. Search available applications
 
