@@ -63,6 +63,7 @@ a)
 
 
 ## Lähteet
+* Karvinen 2026: Kotitehtävän tehtävänanto. Luettavissa: https://terokarvinen.com/application-hacking/#homework
 * OWASP: OWASP Top 10. Luettavissa: https://top10.owasp.org/2021/A01_2021-Broken_Access_Control/
 * Karvinen 2023: Find Hidden Web Directories - Fuzz URLs with ffuf. Luettavissa: https://terokarvinen.com/2023/fuzz-urls-find-hidden-directories/
 * Portswigger: Access control vulnerabilities and privilege escalation. Luettavissa: https://portswigger.net/web-security/access-control
