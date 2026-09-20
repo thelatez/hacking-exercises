@@ -75,21 +75,25 @@ Korjaus:
 * Koodissa isoimmat viat löytyy riveiltä 18 ja 22. <img width="618" height="216" alt="image" src="https://github.com/user-attachments/assets/a6a0f37a-7879-48a5-ba73-226ff748b3b0" />
 * Rivi 18 asettaa muuttujaan "pin" käyttäjän syötteen string-muodossa. Tästä puuttuu kokonaan validointi, onko syöte edes numero. Tarkistaessa voisi esimerkiksi kokeilla muuttaa syötteen ensin numeroksi. Muutoksesta aiheutuu ohjelman kaatuminen, jos muutos ei ole mahdollinen, jonka taas voi estää "except" lohkolla. Tässä miten itse muuttaisin koodin: <img width="438" height="117" alt="Added type check of pin" src="https://github.com/user-attachments/assets/1385a9e9-fa7d-4164-a761-b720447d5c00" /> Testattaessa nyt kaikki muut syötteet paitsi numerot johtavat siihen, että pin on 0. Mukaanlukien injektio, jolla admin salasana saatiin. 
 
-* Rivi 22 asettaa muuttujaan "sql" tietokantaan lähtevän käskyn, joka vain lisää tekstinä "pin" muuttujan arvon. Oikeaoppisessa järjestelmässä syötettä ei lisätä suoraan käskyyn, sille vain varataan paikka parametrina. Tähän löytyy verkosta tietoa, valinta riippuu tietokannan perusteella: MySQL käyttää "?", SQL Server käyttää "@", PostgreSQL käyttää "$". (https://www.w3schools.com/sql/sql_parameterized_queries.asp). Tehdään käsky siis parametrisoituna, käyttäen "@". Tätä kohtaa tehdessä peruutan myös aikaisemman korjauksen muutokset, sillä ne jo "korjaavat ohjelman". 
- 
-* Miten virhe on saattanut aiheutua:
+* Rivi 22 asettaa muuttujaan "sql" tietokantaan lähtevän käskyn, joka vain lisää tekstinä "pin" muuttujan arvon. Oikeaoppisessa järjestelmässä syötettä ei lisätä suoraan käskyyn, sille vain varataan paikka parametrina. Tähän löytyy verkosta tietoa, valinta riippuu tietokannan perusteella: MySQL käyttää "?", SQL Server käyttää "@", PostgreSQL käyttää "$", meidän SQLAlchemy käyttää ":". (https://www.w3schools.com/sql/sql_parameterized_queries.asp). Tehdään käsky siis parametrisoituna, käyttäen ":". Tätä kohtaa tehdessä peruutan myös aikaisemman korjauksen muutokset, sillä ne jo "korjaavat ohjelman". Muutettu koodi: <img width="584" height="119" alt="Parametrized query" src="https://github.com/user-attachments/assets/816b6a6f-49be-4e99-aab9-7399d0cec688" /> Tällä estetään SQL-injektiot. Testattaessa kaikenlaista, en löytänyt tapaa jolla oltaisiin saatu tulos, joka on väärin. Ratkaisu siis toimii.
+
+* Miten virhe on saattanut aiheutua: Tämänlaiset virheet tulevat lähes varmasti kokemattomalta kehittäjältä. Ainakin luulen ja toivon, että kokenut kehittäjä tietää, että syötettä ei voi suoraan lisätä SQL-käskyyn. Tyyppitarkistuksen puuttuminen voisi olla vielä yksinkertaista laiskuutta tai huolettomuutta.
 * Miten korjaus toimii:
-* Johtuuko korjauksesta muita ongelmia:
+  * Korjaus 1 (rivi 18) yrittää muuttaa tuloksen numeroksi. Jos numeron muuttaa numeroksi, se onnistuu hyvin. Ei kuitenkaan ole mahdollista muuttaa jotakin muuta numeroksi, jos se ei ole numero. Jos tulos ei ole numero, se aiheuttaisi ohjelman kaatumisen, jonka "except"-lohko pelastaa, ja sen sijaan asettaa pin-koodiksi 0. Tällöin esimerkiksi injektio (joka ei ole pelkästään numeroita) muuttuu numeroksi 0.
+  * Korjaus 2 (rivi 22) korjaa suoraan SQL-injektion. Parametrisointi syöttää käyttäjän syötteen palasissa, jolloin ne käsitellään erikseen. Tällöin esimerkiksi SQL-injektio ei pysty aiheuttamaan haittaa.
+  
+* Korjauksista johtuvat ongelmat:
+  * Korjaustapa 1 toimii nyt tässä tilanteessa vain numeroille. Jos pin-koodissa voisikin jostain syystä olla vaikka kirjain, ei koodi toimisi.
+  * Korjaustapa 2 muuttaa samalla sivun alareunassa olevan syötteen "SELECT password FROM pins WHERE pin= käyttäjänsyöte" -> "SELECT password FROM pins WHERE pin= :pin" riippumatta siitä, syöttääkö käyttäjä hyväksytyn vai hylätyn syötteen. Tämän voisi korjata (eikä sitä varmaan alkuunkaan olisi, jolloin sillä ei ole väliä) ottamalla syötetty pin-koodi, riippumatta tuloksesta.
 
 Reflektointi:
-* Minkälaisissa kohteissa voisi olla sama haavoittuvuus:
-* Onko yleinen ja realistinen:
-* Miten välttää vastaavanlaista haavoittuvuutta:
-* Muuta opittua:
-* Python on syvältä. TabError: <img width="726" height="196" alt="image of taberror" src="https://github.com/user-attachments/assets/14cc2f0b-c0bf-4340-ba53-12b5b658f016" />
+* Minkälaisissa kohteissa voisi olla sama haavoittuvuus: Etenkin aloittavien kehittäjien sovelluksissa ja jossain massatuotannon sovelluksissa, jos se on huomiovirhe.
+* Onko yleinen ja realistinen: Todellakin ainakin ollut yleinen ja realistinen. Toivon, että nykyään harvempi, koska se on myös aika helppo ja nopea korjata, ja koskee yhä tärkeämmäksi nousevaa tietoturvaa. 
+* Miten välttää vastaavanlaista haavoittuvuutta: Huolellisuus ja varovaisuus, varsinkin kun käsitellään tietokantaa ja sinne kohdistuvia käskyjä. 
+* Muuta opittua: Python on syvältä. TabError: <img width="726" height="196" alt="image of taberror" src="https://github.com/user-attachments/assets/14cc2f0b-c0bf-4340-ba53-12b5b658f016" />
 
 
-
+c) 
 
 
 ## Lähteet
@@ -99,3 +103,4 @@ Reflektointi:
 * Portswigger: Access control vulnerabilities and privilege escalation. Luettavissa: https://portswigger.net/web-security/access-control
 * Karvinen 2006: Raportin kirjoittaminen. Luettavissa: https://terokarvinen.com/2006/raportin-kirjoittaminen-4/
 * W3Schools: SQL Parameters. Luettavissa: https://www.w3schools.com/sql/sql_parameterized_queries.asp
+* OpenAI:n ilmainen ChatGPT -laaja kielimalli. 20.9.2026. Käytetty SQL-injektion korjaamisessa koodista.
