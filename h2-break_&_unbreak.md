@@ -57,7 +57,32 @@ x)
   * Kiellettyä:
     * Sepittäminen (valehtelu/keksiminen), plagiointi
    
-a)
+a, b) 010-staff-only
+Tekoympäristö:
+* Debian 13 -virtuaalinen käyttöjärjestelmä VirtualBoxin avulla. Käyttöjärjestelmässä käytössä 7 GB RAM, 5 prosessoria.
+* Firefox -selain
+* Wi-Fi yhteydellä kotiverkko
+
+Murtautuminen:
+* Epäonnistuneita yrityksiä:
+  * Kokeiltu ensin kaikkea yksinkertaista, kuten ', admin, --, -123. Nämä epäonnistuvat, koska jo ennen pyynnön lähetystä, sovellus tarkistaa onko syöte numero.
+  * Kokeiltu seuraavaksi manuaalisesti lähetettyjä POST pyyntöjä, jossa pin oli edellä mainittuja arvoja. Pyyntöjä voi lähettää mm. selaimen kautta: CTRL + SHIFT + I, "Network", "+" -nappi (New Request). Osoite localhost:5000, POST pyyntö, headerit peritty oikeasta pyynnöstä, body: pin=admin <- jossa admin on kokeiltu arvo. Välilehdeltä "Response" saa näkymän näkyviin, joka kertoo tuloksen. Esimerkiksi request bodyllä " pin=' OR "1"="1" -- " tuloksena on "your password is foo" <img width="1916" height="398" alt="proof of failure" src="https://github.com/user-attachments/assets/43ae560d-f42a-48c6-81e1-354a1d21139f" />
+* Onnistunut yritys: Piti noin tunnin hinkkaamisen jälkeen katsoa vinkkiä, ja oma suoritus olikin jo aika lähellä oikeaa. Piti vain lisätä oikeanlainen LIMIT -avainsana, jota en ollut aikaisemmin käyttänyt. Halutun salasanan saa pinkoodilla " pin=' OR 1=1 LIMIT 2,1; -- ". <img width="1480" height="642" alt="proof of success" src="https://github.com/user-attachments/assets/c6cffd63-0a17-4866-8baf-81485eebfcc2" />. Tulos siis: SUPERADMIN%%rootALL-FLAG{Tero-e45f8764675e4463db969473b6d0fcdd}. 
+
+* Vian selitys: Vika tapahtuu, koska käyttäjän syöte "pin" vain lisätään suoraan SQL-käskyyn tekstinä, esim. **"SELECT password...' " + pin + " ';"**, joka ei ole turvallinen tapa. Lisäksi, koska syötteen validointi tapahtuu vain käyttöliittymän puolella, sen pystyy helposti kiertämään. Hyvä koodi tarkistaa syötteen myös järjestelmän puolella ennen käskyn lähettämistä tietokantaan, sekä käsittelee sen niin, että se ei voi sisältää haitallista koodia.
+
+Korjaus:
+* Koodissa vika löytyy funktion hello ensimmäiseltä muutamalta riviltä (18, 22). <img width="618" height="216" alt="image" src="https://github.com/user-attachments/assets/a6a0f37a-7879-48a5-ba73-226ff748b3b0" />
+ 
+* Miten virhe on saattanut aiheutua:
+* Miten korjaus toimii:
+* Johtuuko korjauksesta muita ongelmia:
+
+Reflektointi:
+* Minkälaisissa kohteissa voisi olla sama haavoittuvuus:
+* Onko yleinen ja realistinen:
+* Miten välttää vastaavanlaista haavoittuvuutta:
+* Muuta opittua?
 
 
 
