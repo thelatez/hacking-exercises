@@ -29,7 +29,7 @@ x)
   * Parhaita tapoja estää käyttäjän pääsy oikeuksiensa ulkopuolelle: kiellä pyynnöt vakiona poislukien julkiset resurssit, rajapintojen rate limit, lyhytaikainen access token tai heti uloskirjautuessa päättyvä access token.
 
   Karvinen 2023: Find Hidden Web Directories - Fuzz URLs with ffuf
-  * Fuff on työkalu, jolla voi "fuzzata" tien sisään piilotettuihin kansioihin, headereihin, POST parametreihin jne.
+  * Ffuf on työkalu, jolla voi "fuzzata" tien sisään piilotettuihin kansioihin, headereihin, POST parametreihin jne.
   * Penetraatiotestauksen tekniikat vaativat laki- ja etiikkapohjaista huomiointia. Ffuf:ia ei voi käyttää kohteisiin ilman kirjallista lupaa.
   * Hyvä vaihtoehto josta saa yleisiä kohteita ja sanoja joilla käyttää ffuf:ia, on "SecLists", kokoelma erilaisia sanalistoja, kuten "common".
   * Kaikki sanat johtavat hakemistossa Status 200, mutta niistä 99% ovat silti samaa kuin ilman mitään tekstiä hakemiston etsimiseksi. Pitää siis löytää muu tapa erotella kuin Status, kuten size.
@@ -117,7 +117,7 @@ Tämä ei kuitenkaan vielä auta meitä, koska nyt kaikista tuloksista, oli tulo
 
 Voidaan suoraan karsia vaihtoehtoja: haluttu tulos pitäisi olla myös toimiva verkkosivu, jolloin sen tulisi sisältää myös "Status: 200". Emme siis voi suodattaa tämän perusteella. Duration kertoo kauanko kokeilu kesti, joka ei kerro välttämättä mitään sivun sisällöstä. Koska esimerkissäkin oli jo vaihtelua ilman, että haluttu tulos löytyi, ei se ole hyvä suodatuskohde.
 
-Valinnoiksi jää siis koko, sanamäärä ja rivimäärä. Näistä voisi ainakin teoriassa valita minkä vain, mutta size on turvallisin, koska esim. riveillä ei välttämättä ole sama tieto, vaikka rivimäärä olisi yhtä iso. Suodatetaan siis tuloksia koon mukaan niin, että kokomerkinnällä "154" ei tulosteta. Fuff:ssa tämä tehdään parametrilla "-fs". Uusi komento siis:
+Valinnoiksi jää siis koko, sanamäärä ja rivimäärä. Näistä voisi ainakin teoriassa valita minkä vain, mutta size on turvallisin, koska esim. riveillä ei välttämättä ole sama tieto, vaikka rivimäärä olisi yhtä iso. Suodatetaan siis tuloksia koon mukaan niin, että kokomerkinnällä "154" ei tulosteta. Ffuf:ssa tämä tehdään parametrilla "-fs". Uusi komento siis:
 
 	ffuf -w common.txt -u http://127.0.0.2:8000/FUZZ -fs 154
 
@@ -129,6 +129,7 @@ Nyt tuloksia on vain seitsemän. Ohjeissa luki, että etsimme versionhallintaan 
 <img width="523" height="176" alt="Proof that wp-admin is an admin page with a flag" src="https://github.com/user-attachments/assets/9e8f01d6-ceb1-432c-9738-a4ede29694a8" />
 
 Versionhallinnan lippu: FLAG{tero-git-3cc87212bcd411686a3b9e547d47fc51}
+
 Admin-sivun lippu: 		FLAG{tero-wpadmin-3364c855a2ac87341fc7bcbda955b580}
 
 d,e)
@@ -156,28 +157,44 @@ Nyt pitäisi olla käynnissä server, jossa applikaatio pyörii. Navigoidaan ver
 
 Murtautuminen:
 * Mitkä tavat epäonnistuivat:
-  * Käytin ensimmäisenä ffufia etsimään mahdollisia sijainteja, jos vaikka löytyisi suojaamaton tapa päästä admin-konsoliin ilman kirjautumista. Etsitään ensin normaalit tulokset: `ffuf -w common.txt -u http://127.0.0.1:8000/FUZZ`. 
+  * Käytin ensimmäisenä ffufia etsimään mahdollisia sijainteja, jos vaikka löytyisi suojaamaton tapa päästä admin-konsoliin ilman kirjautumista. Etsitään ensin normaalit tulokset: `ffuf -w common.txt -u http://127.0.0.1:8000/FUZZ`. Tuloksia vain yksi, "admin-console". Teoriana se, että common.txt ei sisällä esim. "login", "register", ja "admin-dashboard" osoitteita, koska login ja register ovat tyypillisiä löydettäviä osoitteita, ja admin-dashboard saattaa olla taas vähemmän tyypillinen. Muita osoitteita ei löydy listauksesta ollenkaan, koska ne johtaa Page Not Found" eli error 404 -sivuun. Kokeilin laittaa manuaalisesti URL-osoitteen perään "admin-console", mutta se vaatii silti kirjautumista. Meidän pitää siis löytää tapa kiertää login/register pyyntö, mahdollisesti rekisteröitymällä vain käyttäjäksi ja katsoa, tarkastaako koodi onko käyttäjä admin vai vain kirjautunut. 
 * Mikä tapa onnistui:
-  *
+  * Rekisteröidyin käyttäjäksi (user, ei admin), ja yritin navigoida UI-elementtien kautta admin-sivulle. Tämä johtaa osoitteeseen `http://127.0.0.1:8000/admin-dashboard`, josta sovellus ilmoitti "403 Forbidden", eli ei oikeuksia. Tämä sivu on siis suojattu oikein niin, että käyttäjä ei pääse sisään. Mitä kuitenkin tapahtuu, jos kokeilen mennä ffuf:lla löydettyyn "admin-consoleen"?
+    <img width="735" height="375" alt="Admin console does not check permission" src="https://github.com/user-attachments/assets/9873cc1e-956a-42db-8ea5-07580f6e6662" />
+
+	Admin-console ei nähtävästi tarkista käyttäjän oikeuksia, kuten dashboard. 
+
 * Mikä haavoittuvuus:
-  * 
+  * Käyttäjän oikeustasoa ei käsitellä kaikissa admin-liittyvissä sivuissa. Dashboard tarkistaa, console ei. Millä tahansa kirjautuneella käyttäjällä on siis pääsy "admin-console"-sivulle, on admin tai ei. 
 * Miten haavoittuvuutta voi käyttää hyväksi:
-  *
+  * Riippuen admin consolen toiminnoista, kuka tahansa käyttäjä voisi monitoroida tai muokata käyttäjien dataa, oikeuksia jne. 
 
 Korjaaminen:
-* Mikä osio koodista:
-* Miksi tämä on virheellinen:
-* Miten vika olisi voinut tapahtua:
+* Mikä osio koodista: Kansion logtin/hats tiedostot:
+  * `logtin/hats/urls.py` (määrittää näkymät ja niiden osoitteet)
+  * `logtin/hats/views.py` (määrittää näkymien luokat ja sitä kautta oikeudet). 
+* Miksi tämä on virheellinen: views.py palauttaa boolean arvon dashboardista seuraavalla tavalla `return self.request.user.is_authenticated and self.request.user.is_staff`, mutta admin consolesta vain `return self.request.user.is_authenticated`. Console ei siis tosiaan tarkista ollenkaan, onko käyttäjä "staff", eli admin.
+* Miten vika olisi voinut tapahtua: Huomiovirhe? Toisaalta koko rakennekkaan ei tee hirveästi omaan silmään järkeä. Miksi dashboard ja console eivät käytä suoraan samoja oikeusehtoja? Tämä tuntuu selvästi enemmän tahalliselta, kuin vahingolta. 
 * Miten korjata:
-* Aiheutuuko korjauksesta haittavaikutuksia:
+  * Views.py: Lisätään luokkaan "AdminShowAllView" myös ehto, että käyttäjän pitää olla staff.
+  * Toinen vaihtoehto, Urls.py: Käyttää admin consolessa samaa luokkaa "AdminDashboardView", jota dashboard käyttää.
+  
+  Tässä lisätty "AdminShowAllView"iin ehto, että käyttäjän tulee olla staff. Kuvassa ylhäällä muuttamaton sisältö, alhaalla muutettu:
+  
+  <img width="897" height="822" alt="image" src="https://github.com/user-attachments/assets/359efb6a-b5b6-45e0-8f8d-81171a429159" />
+
+  Ja todiste siitä, että nyt ilmenee "403 Forbidden":
+
+  <img width="564" height="137" alt="image" src="https://github.com/user-attachments/assets/844c07f3-c0a4-4df1-ae6a-de8fad6d92f2" />
+
+
+* Aiheutuuko korjauksesta haittavaikutuksia: Ei.
 
 Reflektio:
-* Minkälaisissa kohteissa voisi olla sama haavoittuvuus:
-* Onko yleinen ja realistinen:
-* Miten välttää haavoittuvuutta:
-* Muita opetuksia:
-
-
+* Minkälaisissa kohteissa voisi olla sama haavoittuvuus: Paha sanoa. Aloittelijan sovellukset? Jos puhutaan yleisesti tarkistamisen unohtamisesta, voi tapahtua kenelle vain, jos ei pidä tarpeeksi tarkkaa huomiota.
+* Onko yleinen ja realistinen: Jos tällä tavalla tekisi, että jokainen admin tiedosto sisältää omat oikeudet (jos niillä saattaisi syystä tai toisesta olla muuttuvaa sisältöä), voisi olla realistinen. En kuitenkaan usko, että kyseinen henkilö pysyisi työpaikan palkkalistalla. En sanoisi yleiseksi, ainakaan jos kyse on siitä, että osat admin-suojauksesta on unohtunut, osa ei. Jos puhutaan yleisesti oikeiden tarkistamisesta, voi se olla jonkin verran yleisempi.  
+* Miten välttää haavoittuvuutta: Välttää oikeuksien laittamista useaan eri luokkaan/funktioon yms, mieluummin yksi kunnolla tehty paikka. Jos paikkoja on useampi, sisältö pitäisi kopioida suoraan, jotta tälläisiä virheitä ei tapahtuisi. 
+* Muita opetuksia: Ei.
 
 ## Lähteet
 * Karvinen 2026: Kotitehtävän tehtävänanto. Luettavissa: https://terokarvinen.com/application-hacking/#homework
