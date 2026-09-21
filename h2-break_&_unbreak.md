@@ -93,7 +93,14 @@ Reflektointi:
 * Muuta opittua: Python on syvältä. TabError: <img width="726" height="196" alt="image of taberror" src="https://github.com/user-attachments/assets/14cc2f0b-c0bf-4340-ba53-12b5b658f016" />
 
 
-c) 
+c) dirfuzt-1
+Tarvittavat ladattavat asiat: 
+* dirfuzt-1. Ohjeet lataamiseen ja asennukseen löytyy lataussivulta. Ladattavissa: https://terokarvinen.com/2023/fuzz-urls-find-hidden-directories/
+* ffuf. Ladattavissa: `sudo apt-get install ffuf`
+* SecLists, common.txt. Ladattavissa: `wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/common.txt`
+
+Koska palvelut (dirfuzt-1 ja ffuf) toimivat täysin lokaalisti ilman internetiä, irrotan tässä välissä yhteyden internetistä turvallisuussyistä. 
+
 
 
 ## Lähteet
