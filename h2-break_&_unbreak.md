@@ -168,7 +168,7 @@ Nyt pitäisi olla käynnissä server, jossa applikaatio pyörii. Navigoidaan ver
 
 Murtautuminen:
 * Mitkä tavat epäonnistuivat:
-  * Käytin ensimmäisenä ffufia etsimään mahdollisia sijainteja, jos vaikka löytyisi suojaamaton tapa päästä admin-konsoliin ilman kirjautumista. Etsitään ensin normaalit tulokset: `ffuf -w common.txt -u http://127.0.0.1:8000/FUZZ`. Tuloksia vain yksi, "admin-console". Teoriana se, että common.txt ei sisällä esim. "login", "register", ja "admin-dashboard" osoitteita, koska login ja register ovat tyypillisiä löydettäviä osoitteita, ja admin-dashboard saattaa olla taas vähemmän tyypillinen. Muita osoitteita ei löydy listauksesta ollenkaan, koska ne johtaa Page Not Found" eli error 404 -sivuun. Kokeilin laittaa manuaalisesti URL-osoitteen perään "admin-console", mutta se vaatii silti kirjautumista. Meidän pitää siis löytää tapa kiertää login/register pyyntö, mahdollisesti rekisteröitymällä vain käyttäjäksi ja katsoa, tarkastaako koodi onko käyttäjä admin vai vain kirjautunut. 
+  * Käytin ensimmäisenä ffufia etsimään mahdollisia sijainteja, jos vaikka löytyisi suojaamaton tapa päästä admin-konsoliin ilman kirjautumista. Etsitään ensin normaalit tulokset: `ffuf -w common.txt -u http://127.0.0.1:8000/FUZZ`. Tuloksia vain yksi, "admin-console". Teoriana se, että common.txt ei sisällä esim. "login", "register", ja "admin-dashboard" osoitteita, koska login ja register ovat tyypillisiä löydettäviä osoitteita, ja admin-dashboard saattaa olla taas vähemmän tyypillinen. Muita osoitteita ei löydy listauksesta ollenkaan, koska ne johtaa "Page Not Found" eli error 404 -sivuun. Kokeilin laittaa manuaalisesti URL-osoitteen perään "admin-console", mutta se vaatii silti kirjautumista. Meidän pitää siis löytää tapa kiertää login/register pyyntö, mahdollisesti rekisteröitymällä vain käyttäjäksi ja katsoa, tarkastaako koodi onko käyttäjä admin vai vain kirjautunut. 
 * Mikä tapa onnistui:
   * Rekisteröidyin käyttäjäksi (user, ei admin), ja yritin navigoida UI-elementtien kautta admin-sivulle. Tämä johtaa osoitteeseen `http://127.0.0.1:8000/admin-dashboard`, josta sovellus ilmoitti "403 Forbidden", eli ei oikeuksia. Tämä sivu on siis suojattu oikein niin, että käyttäjä ei pääse sisään. Mitä kuitenkin tapahtuu, jos kokeilen mennä ffuf:lla löydettyyn "admin-consoleen"?
     <img width="735" height="375" alt="Admin console does not check permission" src="https://github.com/user-attachments/assets/9873cc1e-956a-42db-8ea5-07580f6e6662" />
@@ -192,12 +192,11 @@ Korjaaminen:
   
   Tässä lisätty "AdminShowAllView"iin ehto, että käyttäjän tulee olla staff. Kuvassa ylhäällä muuttamaton sisältö, alhaalla muutettu:
   
-  <img width="897" height="822" alt="image" src="https://github.com/user-attachments/assets/359efb6a-b5b6-45e0-8f8d-81171a429159" />
+  <img width="897" height="822" alt="Pre and post change code" src="https://github.com/user-attachments/assets/359efb6a-b5b6-45e0-8f8d-81171a429159" />
 
-  Ja todiste siitä, että nyt ilmenee "403 Forbidden":
+  Ja todiste siitä, että nyt Admin Console antaa virhekoodin "403 Forbidden", eikä oikeaa sisältöä:
 
-  <img width="564" height="137" alt="image" src="https://github.com/user-attachments/assets/844c07f3-c0a4-4df1-ae6a-de8fad6d92f2" />
-
+  <img width="564" height="137" alt="proof of fix" src="https://github.com/user-attachments/assets/844c07f3-c0a4-4df1-ae6a-de8fad6d92f2" />
 
 * Aiheutuuko korjauksesta haittavaikutuksia: Ei.
 
@@ -213,5 +212,6 @@ Reflektio:
 * Karvinen 2023: Find Hidden Web Directories - Fuzz URLs with ffuf. Luettavissa: https://terokarvinen.com/2023/fuzz-urls-find-hidden-directories/
 * Portswigger: Access control vulnerabilities and privilege escalation. Luettavissa: https://portswigger.net/web-security/access-control
 * Karvinen 2006: Raportin kirjoittaminen. Luettavissa: https://terokarvinen.com/2006/raportin-kirjoittaminen-4/
+* Karvinen 2024: Hack n Fix. https://terokarvinen.com/hack-n-fix/ (tehtävät a, b, d, e) 
 * W3Schools: SQL Parameters. Luettavissa: https://www.w3schools.com/sql/sql_parameterized_queries.asp
 * OpenAI:n ilmainen ChatGPT -laaja kielimalli. 20.9.2026. Käytetty SQL-injektion korjaamisessa koodista.
