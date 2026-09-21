@@ -67,15 +67,25 @@ Murtautuminen:
 * Epäonnistuneita yrityksiä:
   * Kokeiltu ensin kaikkea yksinkertaista, kuten ', admin, --, -123. Nämä epäonnistuvat, koska jo ennen pyynnön lähetystä, sovellus tarkistaa onko syöte numero.
   * Kokeiltu seuraavaksi manuaalisesti lähetettyjä POST pyyntöjä, jossa pin oli edellä mainittuja arvoja. Pyyntöjä voi lähettää mm. selaimen kautta: CTRL + SHIFT + I, "Network", "+" -nappi (New Request). Osoite localhost:5000, POST pyyntö, headerit peritty oikeasta pyynnöstä, body: pin=admin <- jossa admin on kokeiltu arvo. Välilehdeltä "Response" saa näkymän näkyviin, joka kertoo tuloksen. Esimerkiksi request bodyllä " pin=' OR "1"="1" -- " tuloksena on "your password is foo" <img width="1916" height="398" alt="proof of failure" src="https://github.com/user-attachments/assets/43ae560d-f42a-48c6-81e1-354a1d21139f" />
-* Onnistunut yritys: Piti noin tunnin hinkkaamisen jälkeen katsoa vinkkiä, ja oma suoritus olikin jo aika lähellä oikeaa. Piti vain lisätä oikeanlainen LIMIT -avainsana, jota en ollut aikaisemmin käyttänyt. Halutun salasanan saa pinkoodilla " pin=' OR 1=1 LIMIT 2,1; -- ". <img width="1480" height="642" alt="proof of success" src="https://github.com/user-attachments/assets/c6cffd63-0a17-4866-8baf-81485eebfcc2" />. Tulos siis: SUPERADMIN%%rootALL-FLAG{Tero-e45f8764675e4463db969473b6d0fcdd}. 
+* Onnistunut yritys: Piti noin tunnin hinkkaamisen jälkeen katsoa vinkkiä, ja oma suoritus olikin jo aika lähellä oikeaa. Piti vain lisätä oikeanlainen LIMIT -avainsana, jota en ollut aikaisemmin käyttänyt. Halutun salasanan saa pinkoodilla " pin=' OR 1=1 LIMIT 2,1; -- ". <img width="1480" height="642" alt="proof of success" src="https://github.com/user-attachments/assets/c6cffd63-0a17-4866-8baf-81485eebfcc2" />
+Tulos siis: SUPERADMIN%%rootALL-FLAG{Tero-e45f8764675e4463db969473b6d0fcdd}. 
 
 * Vian selitys: Vika tapahtuu, koska käyttäjän syöte "pin" vain lisätään suoraan SQL-käskyyn tekstinä, esim. **"SELECT password...' " + pin + " ';"**, joka ei ole turvallinen tapa. Lisäksi, koska syötteen validointi tapahtuu vain käyttöliittymän puolella, sen pystyy helposti kiertämään. Hyvä koodi tarkistaa syötteen myös järjestelmän puolella ennen käskyn lähettämistä tietokantaan, sekä käsittelee sen niin, että se ei voi sisältää haitallista koodia.
 
 Korjaus:
-* Koodissa isoimmat viat löytyy riveiltä 18 ja 22. <img width="618" height="216" alt="image" src="https://github.com/user-attachments/assets/a6a0f37a-7879-48a5-ba73-226ff748b3b0" />
-* Rivi 18 asettaa muuttujaan "pin" käyttäjän syötteen string-muodossa. Tästä puuttuu kokonaan validointi, onko syöte edes numero. Tarkistaessa voisi esimerkiksi kokeilla muuttaa syötteen ensin numeroksi. Muutoksesta aiheutuu ohjelman kaatuminen, jos muutos ei ole mahdollinen, jonka taas voi estää "except" lohkolla. Tässä miten itse muuttaisin koodin: <img width="438" height="117" alt="Added type check of pin" src="https://github.com/user-attachments/assets/1385a9e9-fa7d-4164-a761-b720447d5c00" /> Testattaessa nyt kaikki muut syötteet paitsi numerot johtavat siihen, että pin on 0. Mukaanlukien injektio, jolla admin salasana saatiin. 
+* Koodissa isoimmat viat löytyy riveiltä 18 ja 22.
 
-* Rivi 22 asettaa muuttujaan "sql" tietokantaan lähtevän käskyn, joka vain lisää tekstinä "pin" muuttujan arvon. Oikeaoppisessa järjestelmässä syötettä ei lisätä suoraan käskyyn, sille vain varataan paikka parametrina. Tähän löytyy verkosta tietoa, valinta riippuu tietokannan perusteella: MySQL käyttää "?", SQL Server käyttää "@", PostgreSQL käyttää "$", meidän SQLAlchemy käyttää ":". (https://www.w3schools.com/sql/sql_parameterized_queries.asp). Tehdään käsky siis parametrisoituna, käyttäen ":". Tätä kohtaa tehdessä peruutan myös aikaisemman korjauksen muutokset, sillä ne jo "korjaavat ohjelman". Muutettu koodi: <img width="584" height="119" alt="Parametrized query" src="https://github.com/user-attachments/assets/816b6a6f-49be-4e99-aab9-7399d0cec688" /> Tällä estetään SQL-injektiot. Testattaessa kaikenlaista, en löytänyt tapaa jolla oltaisiin saatu tulos, joka on väärin. Ratkaisu siis toimii.
+  <img width="618" height="216" alt="image" src="https://github.com/user-attachments/assets/a6a0f37a-7879-48a5-ba73-226ff748b3b0" />
+
+* Rivi 18 asettaa muuttujaan "pin" käyttäjän syötteen string-muodossa. Tästä puuttuu kokonaan validointi, onko syöte edes numero. Tarkistaessa voisi esimerkiksi kokeilla muuttaa syötteen ensin numeroksi. Muutoksesta aiheutuu ohjelman kaatuminen, jos muutos ei ole mahdollinen, jonka taas voi estää "except" lohkolla. Tässä miten itse muuttaisin koodin:
+
+  <img width="438" height="117" alt="Added type check of pin" src="https://github.com/user-attachments/assets/1385a9e9-fa7d-4164-a761-b720447d5c00" />
+
+  Testattaessa nyt kaikki muut syötteet paitsi numerot johtavat siihen, että pin on 0. Mukaanlukien injektio, jolla admin salasana saatiin. 
+
+* Rivi 22 asettaa muuttujaan "sql" tietokantaan lähtevän käskyn, joka vain lisää tekstinä "pin" muuttujan arvon. Oikeaoppisessa järjestelmässä syötettä ei lisätä suoraan käskyyn, sille vain varataan paikka parametrina. Tähän löytyy verkosta tietoa, valinta riippuu tietokannan perusteella: MySQL käyttää "?", SQL Server käyttää "@", PostgreSQL käyttää "$", meidän SQLAlchemy käyttää ":". (https://www.w3schools.com/sql/sql_parameterized_queries.asp). Tehdään käsky siis parametrisoituna, käyttäen ":". Tätä kohtaa tehdessä peruutan myös aikaisemman korjauksen muutokset, sillä ne jo "korjaavat ohjelman". Muutettu koodi: <img width="584" height="119" alt="Parametrized query" src="https://github.com/user-attachments/assets/816b6a6f-49be-4e99-aab9-7399d0cec688" />
+
+  Tällä estetään SQL-injektiot. Testattaessa kaikenlaista, en löytänyt tapaa jolla oltaisiin saatu tulos, joka on väärin. Ratkaisu siis toimii.
 
 * Miten virhe on saattanut aiheutua: Tämänlaiset virheet tulevat lähes varmasti kokemattomalta kehittäjältä. Ainakin luulen ja toivon, että kokenut kehittäjä tietää, että syötettä ei voi suoraan lisätä SQL-käskyyn. Tyyppitarkistuksen puuttuminen voisi olla vielä yksinkertaista laiskuutta tai huolettomuutta.
 * Miten korjaus toimii:
@@ -132,9 +142,10 @@ Versionhallinnan lippu: FLAG{tero-git-3cc87212bcd411686a3b9e547d47fc51}
 
 Admin-sivun lippu: 		FLAG{tero-wpadmin-3364c855a2ac87341fc7bcbda955b580}
 
+
 d,e)
 
-Ympäristö: Debian 13, Firefox, Lenovo-kannettava tietokone, kotiverkko
+Ympäristö: Windows -> VirtualBox Debian 13. 7 GB RAM, 5 core. Firefox, Lenovo-kannettava tietokone, kotiverkko
 
 Varovaisuus: Ffufia käyttäessä verkko sammutettuna.
 
