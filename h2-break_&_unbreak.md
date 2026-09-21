@@ -101,6 +101,82 @@ Tarvittavat ladattavat asiat:
 
 Koska palvelut (dirfuzt-1 ja ffuf) toimivat täysin lokaalisti ilman internetiä, irrotan tässä välissä yhteyden internetistä turvallisuussyistä. 
 
+Kokeillaan nyt kaikkia common.txt:n rivejä URL-osoitteen päätteenä, käyttäen ffuf:ia. Eli http://127.0.0.2:8000/FUZZ (jossa FUZZ on jokainen yli 4700 avainsanaa common.txt tiedostosta yksitellen). 
+
+	ffuf -w common.txt -u http://127.0.0.2:8000/FUZZ
+
+Tällä saadaan tuhansia rivejä, esim:
+<img width="1191" height="521" alt="Example of fuff output" src="https://github.com/user-attachments/assets/1b495e9a-f02f-4212-af86-9c7b2bc6b2e4" />
+
+Tämä ei kuitenkaan vielä auta meitä, koska nyt kaikista tuloksista, oli tulos haluttu tai ei, tulee uusi rivi. Meidän pitää siis suodattaa sisältöä jotenkin niin, että virheellisiä tuloksia ei tulosteta. Katsotaan siis tuloksista, mikä toistuu eniten. Toistuvia kohteita on eniten:
+* Status: 200
+* Size: 154
+* Words: 9
+* Lines: 10
+* Duration 0ms/1ms
+
+Voidaan suoraan karsia vaihtoehtoja: haluttu tulos pitäisi olla myös toimiva verkkosivu, jolloin sen tulisi sisältää myös "Status: 200". Emme siis voi suodattaa tämän perusteella. Duration kertoo kauanko kokeilu kesti, joka ei kerro välttämättä mitään sivun sisällöstä. Koska esimerkissäkin oli jo vaihtelua ilman, että haluttu tulos löytyi, ei se ole hyvä suodatuskohde.
+
+Valinnoiksi jää siis koko, sanamäärä ja rivimäärä. Näistä voisi ainakin teoriassa valita minkä vain, mutta size on turvallisin, koska esim. riveillä ei välttämättä ole sama tieto, vaikka rivimäärä olisi yhtä iso. Suodatetaan siis tuloksia koon mukaan niin, että kokomerkinnällä "154" ei tulosteta. Fuff:ssa tämä tehdään parametrilla "-fs". Uusi komento siis:
+
+	ffuf -w common.txt -u http://127.0.0.2:8000/FUZZ -fs 154
+
+<img width="893" height="613" alt="Proof of edited ffuf command working" src="https://github.com/user-attachments/assets/b9d86ba4-b4c8-43f8-b63e-2ecf7480fe96" />
+
+Nyt tuloksia on vain seitsemän. Ohjeissa luki, että etsimme versionhallintaan liittyvää sivua, ja admin-sivua. Tuloksista voisi päätellä, että versionhallinnan sivu on varmaankin `http://127.0.0.2:8000/.git` ja admin-sivu on `http://127.0.0.2:8000/wp-admin`. Käydään tarkistamassa nämä manuaalisesti:
+
+<img width="482" height="171" alt="Proof that .git exists with a flag" src="https://github.com/user-attachments/assets/c8e9191f-31c2-4d69-adf5-330bd435d53e" />
+<img width="523" height="176" alt="Proof that wp-admin is an admin page with a flag" src="https://github.com/user-attachments/assets/9e8f01d6-ceb1-432c-9738-a4ede29694a8" />
+
+Versionhallinnan lippu: FLAG{tero-git-3cc87212bcd411686a3b9e547d47fc51}
+Admin-sivun lippu: 		FLAG{tero-wpadmin-3364c855a2ac87341fc7bcbda955b580}
+
+d,e)
+
+Ympäristö: Debian 13, Firefox, Lenovo-kannettava tietokone, kotiverkko
+
+Varovaisuus: Ffufia käyttäessä verkko sammutettuna.
+
+Sovelluksen käynnistys:
+
+Tehdään seuraavat komennot rivi kerrallaan:
+
+	cd challenges/020-your-eyes-only/
+	sudo apt-get -y install virtualenv
+	virtualenv virtualenv/ -p python3 --system-site-packages
+	source virtualenv/bin/activate
+	pip install -r requirements.txt
+	cd logtin/
+	./manage.py makemigrations; ./manage.py migrate
+	./manage.py runserver
+
+Nyt pitäisi olla käynnissä server, jossa applikaatio pyörii. Navigoidaan verkossa: `http://127.0.0.1:8000`:
+
+<img width="627" height="427" alt="Assigment d webpage" src="https://github.com/user-attachments/assets/13cf2479-ffdf-4615-8973-cde5af26df19" />
+
+Murtautuminen:
+* Mitkä tavat epäonnistuivat:
+  * Käytin ensimmäisenä ffufia etsimään mahdollisia sijainteja, jos vaikka löytyisi suojaamaton tapa päästä admin-konsoliin ilman kirjautumista. Etsitään ensin normaalit tulokset: `ffuf -w common.txt -u http://127.0.0.1:8000/FUZZ`. 
+* Mikä tapa onnistui:
+  *
+* Mikä haavoittuvuus:
+  * 
+* Miten haavoittuvuutta voi käyttää hyväksi:
+  *
+
+Korjaaminen:
+* Mikä osio koodista:
+* Miksi tämä on virheellinen:
+* Miten vika olisi voinut tapahtua:
+* Miten korjata:
+* Aiheutuuko korjauksesta haittavaikutuksia:
+
+Reflektio:
+* Minkälaisissa kohteissa voisi olla sama haavoittuvuus:
+* Onko yleinen ja realistinen:
+* Miten välttää haavoittuvuutta:
+* Muita opetuksia:
+
 
 
 ## Lähteet
