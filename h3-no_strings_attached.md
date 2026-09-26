@@ -91,9 +91,58 @@ Muut "ongelmat", miksi tämä riittää palautukseen, mutta ei realistisesti est
 * Lippu (flag) löytyy yhä strings-komennolla, koska sitä ei edes sotkettu millään tavalla. Jos pitäisi löytää vain lippu tai jos se mainitsisi syystä tai toisesta oikean salasanan, olisi sotku turhaa.
 * Tämä ei tietenkään lisää turvallisuutta, vain karkoittaa helpoimmat tavat murtautua pois.
 * Sotku ei ole monimutkainen. Varsinkin, kun salasana on yhä selkokieltä (sama `sala-hakkeri-321`), on se helpohko huomata.
-* Vaikka sotku olisi monimutkaisempi (esim. h5 tehtävän binäärit), voi niitä yhä ratkoa seuraamalla esim. konekoodia ja rekistereitä. 
+* Vaikka sotku olisi monimutkaisempi (esim. h5 tehtävän binäärit), voi niitä yhä ratkoa seuraamalla esim. konekoodia ja rekistereitä.
+
+### c)
+Aloitetaan siirtymällä packd-kansioon:
+
+	cd ~/h3/challenges/packd
+
+Suoritetaan packd ohjelma:
+
+	./packd
+
+<img width="419" height="80" alt="packd program functionality" src="https://github.com/user-attachments/assets/16da5808-0458-48b6-985a-e594c95f6c1b" />
+
+Toiminnallisuus vaikuttaa olevan samanlainen kuin edellinen tehtävä: kysyy salasanan ja kertoo onko se väärin/oikein.
+
+Katsotaan seuraavaksi strings-komennolla packd-tiedostoa:
+
+	strings packd
+
+<img width="786" height="762" alt="strings packd results" src="https://github.com/user-attachments/assets/f3f66a14-9158-4129-b9ed-4ae839d04b16" />
+
+Tulos on mielenkiintoinen. Sovellusta on selvästi sotkettu nyt vahvemmin. Jopa alussa olevat selkeämmät asiat kuten kirjastot tai paketit ovat sotkuisia. Strings-komennolla tulee ilmi jotakin salasanaan viittaavaa, kuten `piilos-An`, mutta se ei riitä. Syötettä on jotenkin leikattu, nähtävästi joskus alusta, joskus lopusta. Kiinnitänkin enemmän huomiota siis riveihin `$Info: This file is packed with the UPX executable packer http://upx.sf.net $
+$Id: UPX 4.21 Copyright (C) 1996-2023 the UPX Team. All Rights Reserved. $`. Tämä viittaisi siihen, että tiedosto todellakin on kompressoitu, käyttäen "UPX executable packer"ia. Etsitään netistä, voiko UPX kompressoiduille tiedostoille tehdä jotain (https://github.com/upx/upx). 
+
+Tiedostoja pitäisi pystyä myös dekompressoimaan joten ladataan UPX:
+
+	sudo apt install upx
+
+Kokeillaan sen jälkeen dekompressoida:
+
+	upx -d packd
+
+<img width="859" height="192" alt="decompressing UPX compressed file packd" src="https://github.com/user-attachments/assets/42ee8f37-7a7a-4ce3-bdd1-54355f3966ad" />
+
+Nähtävästi dekompressointi toimi. Katsotaan, muuttiko dekompressointi mitään:
+
+	strings packd
+
+<img width="728" height="419" alt="Strings packd after decompression" src="https://github.com/user-attachments/assets/16800ec5-b24e-4dfb-b66b-4cb232b90145" />
+
+Nyt rakenne näyttää tutulta. Näyttäisi siltä, että salasana on kenties `piilos-AnAnAs`. Kokeillaan sitä:
+
+	./packd
+
+<img width="701" height="102" alt="piilos-AnAnAs as password for packd" src="https://github.com/user-attachments/assets/bac87427-72ce-457d-8102-cd325c603560" />
+
+Nähtävästi tehtävä oli siinä. Salasana `piilos-AnAnAs`, lippu: `FLAG{Tero-0e3bed0a89d8851da933c64fefad4ff2}`. 
+
+Fiilis kohdasta c: oletin tehtäväkuvauksen perusteella vaikeampaa tehtävää ("This task is slightly more challenging. Write down the approaches you tried and hypotheses you came up with. Hopefully you'll reach the goal yourself, but if not, the walkthrough will be revealed in class..."). En tiedä onko hyvä vai huono juttu, että tässä ei tarvinnut jauhaa pidempään.
 
 ## Lähteet:
 * Karvinen 2026. Tehtävänanto. Luettavissa: https://terokarvinen.com/application-hacking/#homework
 * Karvinen, ezbin-challenges.zip. Ladattavissa: https://terokarvinen.com/loota/yctjx7/ezbin-challenges.zip
 * OpenAI, ilmainen ChatGPT-laaja kielimalli. Käytetty luomaan osa kohdan b koodista. Käytetty 26.9.2026. Saatavilla: https://chatgpt.com/
+* UPX, tiedostojen kompressoija. Luettavissa: https://github.com/upx/upx
