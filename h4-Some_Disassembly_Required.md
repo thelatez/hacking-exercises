@@ -5,12 +5,9 @@
 * a) Lataa Ghidra
 * b) Rever-C: käänteismallinna `packd` binääri C-kieleksi Ghidralla. Löydä pääohjelma. Anna muuttujille kuvaavat nimet, selitä ohjelman toiminnallisuus. Ratkaise tehtävä binääristä, ilman lähdekoodia.
 * c) If takaperin: muokkaa `passtr` ohjelman binääri niin, että se hyväksyy kaikki salasanat paitsi oikean. Todista.
-* d) Nora CrackMe: binäärit Tindall 2023: NoraCodes / crackmes. https://github.com/NoraCodes/crackmes. 
-* e) Nora crackme01. Ratkaise binääri.
-* f) Nora crackme01e. Ratkaise binääri.
-* g) Nora crackme02. Nimeä ohjelman muuttujat käänteismallinnetusta binääristä, ja selitä sen toiminnallisuus. Ratkaise binääri.
-
-HUOM. alkuperäisessä tehtävänannossa (https://terokarvinen.com/application-hacking/#homework) kohtani e+f ovat molemmat e, varmaankin virhe. Ratkaisuni ei siis sisällä vapaaehtoisia tehtäviä, vain eroteltu kaksi e kohtaa toisistaan.
+* d) Nora CrackMe: binäärit Tindall 2023: NoraCodes / crackmes. https://github.com/NoraCodes/crackmes. Käännä binääreiksi. 
+* e) Nora crackme01, crackme01e. Ratkaise binäärit.
+* f) Nora crackme02. Nimeä ohjelman muuttujat käänteismallinnetusta binääristä, ja selitä sen toiminnallisuus. Ratkaise binääri.
 
 ## Vastaus
 
@@ -147,6 +144,46 @@ Valitaan `File` valikosta `Export Program`. Valitaan tyypiksi `Original File`. J
 Kuvasta voidaan nähdä, kaksi ensimmäistä selkeästi väärää salasanaa antoivat halutun tuloksen, kun taas koodista löydetty `sala-hakkeri-321` ei toiminut. If-ehdon kääntö siis onnistui. 
 
 Oikea salasana alussa `sala-hakkeri-321`, muokatussa binäärissä kaikki muut salasanat paitsi `sala-hakkeri-321`. Lippu: `FLAG{Tero-d75ee66af0a68663f15539ec0f46e3b1}`. 
+
+### d) Käännä crackme binäärit
+
+Ladataan ensin tiedostot.
+
+	cd ~/h4
+	git clone https://github.com/NoraCodes/crackmes.git
+	cd crackmes
+
+<img width="684" height="101" alt="downloaded git repository files" src="https://github.com/user-attachments/assets/079a75dc-c8dc-4aa0-8f15-15c2adcbdbd9" />
+
+
+Nyt meillä on crackme01 - crackme09 tehtävät. Ladatut tiedostot sisältävät myös Makefilen, jolla voi kääntää lähdekoodit binääreiksi.
+
+	make
+
+Nyt kaikista lähdekoodeista pitäisi olla käännetyt versiot.
+
+<img width="739" height="179" alt="Compiled versions of Nora crackmes" src="https://github.com/user-attachments/assets/587ebc90-dd5b-4826-9ac2-0754ba96d187" />
+
+### e) Nora crackme01 & crackme01e
+
+Ohjelmat `crackme01` ja `crackme01e` voisi ratkaista esim. Ghidralla, mutta siinä ei ole mitään järkeä. Tulokset ovat helposti saatavilla pelkällä `strings` komennolla. Ghidrassakin salasanat olisivat selkeästi esillä. Kuvissa strings-esimerkit:
+
+<img width="463" height="389" alt="strings crackme01" src="https://github.com/user-attachments/assets/1cde45e2-127d-46d0-89e3-4af085f7e7a2" />
+<img width="469" height="370" alt="strings crackme01e" src="https://github.com/user-attachments/assets/d68597ea-ede5-4a4a-976c-f22e50c4fbf9" />
+
+Esimerkki myös Ghidrasta, binääri `crackme01e`:
+
+<img width="347" height="464" alt="crackme01e ghidra decompile code" src="https://github.com/user-attachments/assets/bff79789-47dc-4054-b0ee-88f63cb4719e" />
+
+Kuvassa rivillä 11 löytyy myös tyypillinen strncmp, ja sen sisältä kovakoodattu salasana.
+
+Salasanat siis:
+* `crackme01` = `password1`
+* `crackme01e` = `slm!paas.k` 
+
+<img width="542" height="101" alt="crackme1 and crackme01e proof" src="https://github.com/user-attachments/assets/7e7a6c77-0200-4db4-8367-3130a12e57fc" />
+
+
 
 ## Lähteet
 * Karvinen, tehtävänanto. Luettavissa: https://terokarvinen.com/application-hacking/#homework
