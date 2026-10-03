@@ -7,7 +7,7 @@
 * c) If takaperin: muokkaa `passtr` ohjelman binääri niin, että se hyväksyy kaikki salasanat paitsi oikean. Todista.
 * d) Nora CrackMe: binäärit Tindall 2023: NoraCodes / crackmes. https://github.com/NoraCodes/crackmes. Käännä binääreiksi. 
 * e) Nora crackme01, crackme01e. Ratkaise binäärit.
-* f) Nora crackme02. Nimeä ohjelman muuttujat käänteismallinnetusta binääristä, ja selitä sen toiminnallisuus. Ratkaise binääri.
+* f) Nora crackme02. Nimeä ohjelman muuttujat käänteismallinnetusta binääristä, ja selitä sen toiminnallisuus. Ratkaise binääri. (+h, löydä toinen ratkaisu)
 
 ## Vastaus
 
@@ -74,7 +74,7 @@ Entuudestaan tiedetään jo, että C-kielessä main-funktio on aina int-tyyppine
 
 Seuraavaksi voi kiinnittää huomiota määritettyihin muuttujiin:
 * `int iVar1` tallennettu yksi int-tyyppinen muuttuja, arvoa ei vielä määritelty. Hieman myöhäisemmässä vaiheessa koodia huomataankin, että siihen laitetaan muuttuja strcmp -funktiosta (string comparison, tekstien vertailu). Tulosta verrataan nollaan, ja annetaan oikean salasanan vastaus ja lippu, jos iVar1 on 0. Muuttuja on siis yksinkertaisesti salasanan vertauksen tuloksen tallennus. Muutetaan sen nimeksi vaikkapa `cmpResult`.
-* `char local_28 [32]` tarkoittaa char tyyppistä tekstitaulukkoa, eli merkkijonoa. Maksimipituus on 32. Myöhemmin `scanf` funktio näyttää ottavan käyttäjältä syötteen, ja asettavan sen local_28:aan. local_28 on siis syötteemme, vaihdetaan sen nimeksi `input`.
+* `char local_28 [32]` tarkoittaa char tyyppistä taulukkoa, eli merkkijonoa. Maksimipituus on 32. Myöhemmin `scanf` funktio näyttää ottavan käyttäjältä syötteen, ja asettavan sen local_28:aan. local_28 on siis syötteemme, vaihdetaan sen nimeksi `input`.
 
 <img width="598" height="347" alt="Changed variable names" src="https://github.com/user-attachments/assets/4cab7d27-abb9-4ae8-9a98-0a2c959f5cc7" />.
 
@@ -183,6 +183,55 @@ Salasanat siis:
 
 <img width="542" height="101" alt="crackme1 and crackme01e proof" src="https://github.com/user-attachments/assets/7e7a6c77-0200-4db4-8367-3130a12e57fc" />
 
+### f + h) Nora crackme02
+
+Tehdään jälleen uusi projekti Ghidraan, ja lisätään sinne `crackme02.64` -tiedosto.
+* Vasemman yläkulman `File` -> `New Project` -> `Non-Shared Project` -> Valitse sijainti. Itse teen uuden kansion `g_crackme02` kansioon h4. Projektin nimeksi esim. sama kuin kansion nimi, g_crackme02. -> `Finish`.
+* Klikkaa kansiota
+* Vasemman yläkulman `File` -> `Import File...` -> Navigoi crackme02 -tiedostoon. Löytyy h4/crackmes sisältä. -> `Select File To Import`. Jos tiedosto on käyttökelpoinen, Ghidran pitäisi huomata se heti. Esim. siis aukeavassa ikkunassa tulisi lukea `Format: Executable and Linking Format (ELF)`. 
+
+Avataan tiedosto kaksoisklikkaamalla, ja hyväksytään automaattinen analysointi.
+
+Valitaan `Symbol Tree`stä `Functions` ja sieltä `main`. 
+
+<img width="1920" height="734" alt="crackme02 opened in ghidra" src="https://github.com/user-attachments/assets/4d9f7312-b389-487b-a7b0-914b7f0f29a6" />
+
+Aletaan nimeämään koodin osia. Tiedämme jo, että `main` kuuluu olla tyypiltään `int`. Vaihdetaan siis sen `undefined8` -> `ínt`. Verkosta etsimällä myös selviää, että jos `main` funktiolla on parametrejä, ne ovat `argc` eli argumenttien määrä (kpl) ja `argv` eli taulukko `argc` pointereista (geeksforgeeks: main function). Voidaan siis nimetä:
+* `param_1` = `argc`
+* `param_2` = `argv` 
+
+Samalla huomasin kysyessäni Geminiltä, että `argv`:n tyyppi "long" kannattaa myös vaihtaa `argv`n tyypilliseen tyyppiin, `char **`. Tämä tekee koodista yhä luettavampaa, koska nyt myös `argv`n tyyppi tunnistetaan oikein, joka vaikuttaa myöhemmin tulevaan koodiin. Muokkausten jälkeinen koodi:
+
+<img width="354" height="507" alt="changed main type and parameters" src="https://github.com/user-attachments/assets/c90f4d76-45ec-452f-ad56-34a017a10324" />
+
+Katsotaan seuraavaksi muuttujia `char cVar1`, `int iVar2` ja `long lVar3`.
+* Aloitetaan selkeimmästä, `int iVar2`. Pystymme huomaamaan, että se on palautettava arvo, ja aina viimeisenä asetettu jokaisessa if-else -rakenteem lopussa. Tämä on siis se, joka määrittää millä tuloksella ohjelma palautuu (haluttu tulos on 0). Se on siis `tulos`. Nimetään se `result`.
+* Seuraavaksi `long lVar3`. Nähtävästi `lVar3` on lähes aina hakasulkujen `[]` sisällä. Se vaikuttaisi siis olevan taulukkoindeksi, kuten ota kirjain salasanasta `salasana`, kohdasta `lVar3`, eli `salasana[lVar3]`. `lVar3` on siis luultavasti indeksi, joten nimetään se `index`. <sub> Indeksi olisi hyvä myös vaihtaa tyypiksi `int`, mutta kokeiltuani se laittaa nimiin lisäksi alkuun `_`, esim. `_index` joka oli häiritsevää. Tästä syystä jätän sen tyypiksi long. Käytän myös sanaa index mieluummin kuin i, koska se näkyy huonosti Ghidrassa. </sub>
+* Viimeisenä `char cVar1`. Kun koodi on jo huomattavasti siistimpi aikaisempien muutosten perusteella, on `cVar1` myös helppo ymmärtää. `cVar1`een asetetaan alussa kirjain `p`, joka on sattumoisin myös `password1`n ensimmäinen kirjain. Samalla myös voidaan huomata, että siihen asetetaan tietystä kohdasta stringiä `password1` kirjain: `cVar1 = "password1"[index + 1];`. `cVar1` on siis vertailtava merkki, johon syötteemme tiettyä kirjainta (`argv[1][index]`) vertaillaan, pienen lisämuunnoksen kautta. Nimetään `cVar1` -> `character`.
+
+Kuvassa muutokset:
+
+<img width="402" height="504" alt="image of variable changes" src="https://github.com/user-attachments/assets/34f3b520-a9c6-473b-b516-302df1ff9ad7" />
+
+Ohjelman toiminnallisuus alkaa olemaan selvä:
+* Rivi 9 `if (argc == 2)` katsoo onko argumentteja tasan kaksi (ohjelman kutsu + parametri), esimerkiksi: `crackme02 syötettysalasana`. Jos parametrejä ei ole kahta, kerrotaan meille `Need exactly one argument.`
+* Rivi 10 ja 11 asettavat muuttujille `character` ja `index` alkuarvonsa.
+* Rivi 12 aloittaa loopin (do-while). Se tekee do-lohkon sisustaa niin kauan, kunnes whilen ehto (`character != '\0'`) ei enää täyty, eli kunnes `password1`:n merkki on `\0`.
+* Rivi 13 katsoo, onko syötteemme (`argv[1]`) kirjain kohdassa `index` päätösmerkki `\0`. Jos on, rikotaan do-while loop, joka myös johtaa suoraan oikean salasanan tulokseen. Tämä on ohjelmakoodissa virhe, koska tällöin tyhjä syöte käy myös oikeaksi salasanaksi (huom. syöte tulee silti olla). Tämä on tahattomasti ratkaisu tehtävään h: löydä molemmat ratkaisut. Kuvassa esimerkki:
+
+	<img width="426" height="96" alt="proof that empty password works" src="https://github.com/user-attachments/assets/af2e0c2c-7c71-4a71-929d-8bf2f90a5198" />
+
+* Rivi 14 lisää kirjaimen character arvoon `-1`, eli vähentää sen arvosta yhden. Tämä siis muuttaa esim. kirjaimen `b` -> `a`. Tätä kirjainta sitten vertaillaan syötteemme kirjaimeen samassa kohdassa. Jos kirjaimet eivät ole samat, ohjelma kertoo meille `No, <syöte> is not correct.` (<- rivi 15) ja palauttaa arvon 1 (<- rivi 16).
+* Rivi 18 muuttaa jälleen muuttujan `character` kirjainta seuraavaan.
+* Rivi 19 nostaa indeksiä `index` yhdellä.
+* Rivi 20 on tosiaan do-while loopin while ehto: onko `character` päätösmerkki `\0` vai ei. Jos ei, aloitetaan loop alusta, muuten siirrytään oikean vastauksen riveille 21 ja 22.
+* Rivi 28 palauttaa muuttujan `result` arvon. Se on -1, jos argumentteja oli vähemmän kuin kaksi (funktiokutsu + 1), tai 0, jos salasana on oikein. `result` muuttuja ei saa muita arvoja, vaikka ohjelma palauttaa myös arvon 1 väärän kirjaimen yhteydessä.
+
+Ohjelman päälogiikka on siis se, että ohjelma vähentää tekstin `password1` jokaista kirjainta yhdellä. Jos syötämme siis salasanaksi tekstin, joka on jokaiselta kirjaimeltaan yksi pienempi kuin `password1`, on se oikea salasana. 
+* `password1` (hex) = 70 61 73 73 77 6F 72 64 31
+* eli salasana on... = 6F 60 72 72 76 6E 71 63 30 = o`rrvnqc0 
+
+<img width="524" height="63" alt="correct password proof" src="https://github.com/user-attachments/assets/68c82d88-39c9-46c5-9822-97629f5721c8" />
 
 
 ## Lähteet
@@ -192,3 +241,5 @@ Salasanat siis:
 * Tindall 2023, NoraCodes / crackmes. Ladattavissa: github.com/NoraCodes/crackmes
 * geeksforgeeks: puts vs printf. Luettavissa: https://www.geeksforgeeks.org/c/puts-vs-printf-for-printing-a-string/
 * geeksforgeeks: strcmp. Luettavissa: https://www.geeksforgeeks.org/c/strcmp-in-c/
+* geeksforgeeks: main function. Luettavissa: https://www.geeksforgeeks.org/c/main-function-in-c/
+* Google, Gemini -laaja kielimalli. Käytetty 3.10.2026. Käytetty ymmärtämään tarkemmin Ghidran käyttöä esim. rename ja retype ero.
